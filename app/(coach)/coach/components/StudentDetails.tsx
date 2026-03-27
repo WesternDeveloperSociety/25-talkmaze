@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ConversationClient } from "@/app/(protected)/message/[id]/_client";
+import { ConversationClient } from "@/app/(student)/message/[id]/_client";
 
 interface Student {
   id: string;

@@ -2,7 +2,7 @@ import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 import ProfileCard from "../components/profiles/ProfileCard";
 import ManageProfilesButton from "../components/profiles/ManageProfilesButton";
-import { selectProfile } from "../../../lib/profile-management/selectProfile";
+import { selectProfile } from "@/lib/profile-management/selectProfile";
 import { getCurrentUser } from "@/utils/supabase/lib/getCurrentUser";
 
 // Profile to select as the "active profile"
