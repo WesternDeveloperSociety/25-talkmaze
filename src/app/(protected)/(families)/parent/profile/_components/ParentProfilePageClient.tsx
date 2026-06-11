@@ -1,7 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/src/components/ui/avatar";
 import { createClient } from "@/src/services/supabase/client";
 import { updateParentInfo, updateParentPin } from "../actions";
 import { CaretIcon } from "@/src/components/ui/icons";
@@ -226,18 +230,14 @@ function LeftPanel({ parent }: { parent: ParentData }) {
           aria-label="Change profile picture"
         >
           {/* Show preview if pending, otherwise current avatar */}
-          {(pendingPreview ?? avatarUrl) ? (
-            <Image
-              src={pendingPreview ?? avatarUrl!}
+          <Avatar variant="navy" className="size-full text-3xl">
+            <AvatarImage
+              src={pendingPreview ?? avatarUrl}
               alt="Profile avatar"
-              fill
-              className="object-cover"
+              sizes="128px"
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#B1E7D6] text-3xl font-bold">
-              {initials}
-            </div>
-          )}
+            <AvatarFallback className="font-bold">{initials}</AvatarFallback>
+          </Avatar>
           {/* Hover overlay - only when not in pending confirmation */}
           {!pendingFile && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 group-disabled:opacity-100 transition-opacity">

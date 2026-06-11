@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { signOut } from "@/src/lib/auth/actions/signOut";
+import { Avatar, AvatarImage, AvatarFallback } from "@/src/components/ui/avatar";
 
 /**
  * Component rendering the Circular profile picture and the dropdown triangle,
@@ -45,14 +45,17 @@ export default function AvatarIcon({ profileType, avatarUrl }: Props) {
         aria-label="Profile menu"
         className="flex items-center gap-1.5 text-white cursor-pointer"
       >
-        <div className="rounded-full w-11 h-11 md:w-[66px] md:h-[66px] shadow-[0_4px_4px_rgba(0,0,0,0.25)] overflow-hidden relative">
-          <Image
+        <Avatar
+          variant="navy"
+          className="size-11 md:size-16.5 shadow-[0_4px_4px_rgba(0,0,0,0.25)]"
+        >
+          <AvatarImage
             src={avatarUrl ?? PROFILE_IMAGE[profileType]}
             alt="Profile"
-            fill
-            className="object-cover"
+            sizes="66px"
           />
-        </div>
+          <AvatarFallback />
+        </Avatar>
         <svg
           width="10"
           height="7"

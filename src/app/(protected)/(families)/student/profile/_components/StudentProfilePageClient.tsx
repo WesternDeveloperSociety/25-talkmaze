@@ -1,7 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import Image from "next/image";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/src/components/ui/avatar";
 import { createClient } from "@/src/services/supabase/client";
 import { updateStudentInfo } from "../actions";
 import { CaretIcon } from "@/src/components/ui/icons";
@@ -104,7 +108,9 @@ function LeftPanel({ student }: { student: StudentData }) {
     const allowedExtensions = ["png", "jpg", "jpeg", "webp", "gif"];
     const fileExt = file.name.split(".").pop()?.toLowerCase();
     if (!fileExt || !allowedExtensions.includes(fileExt)) {
-      setError(`Invalid file extension. Please use: ${allowedExtensions.join(", ")}`);
+      setError(
+        `Invalid file extension. Please use: ${allowedExtensions.join(", ")}`,
+      );
       e.target.value = "";
       return;
     }
@@ -158,7 +164,9 @@ function LeftPanel({ student }: { student: StudentData }) {
 
     const publicUrl = urlData.publicUrl;
 
-    const result = await updateStudentInfo(student.id, { avatar_url: publicUrl });
+    const result = await updateStudentInfo(student.id, {
+      avatar_url: publicUrl,
+    });
     setUploading(false);
 
     if (result.success) {
@@ -200,18 +208,14 @@ function LeftPanel({ student }: { student: StudentData }) {
           className="group relative w-32 h-32 rounded-full overflow-hidden bg-[#2b4257] shadow-[0_4px_4px_rgba(0,0,0,0.25)] shrink-0 cursor-pointer focus:outline-none"
           aria-label="Change profile picture"
         >
-          {(pendingPreview ?? avatarUrl) ? (
-            <Image
-              src={pendingPreview ?? avatarUrl!}
+          <Avatar variant="navy" className="size-full text-3xl">
+            <AvatarImage
+              src={pendingPreview ?? avatarUrl}
               alt="Profile avatar"
-              fill
-              className="object-cover"
+              sizes="128px"
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-[#B1E7D6] text-3xl font-bold">
-              {initials}
-            </div>
-          )}
+            <AvatarFallback className="font-bold">{initials}</AvatarFallback>
+          </Avatar>
           {!pendingFile && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 group-disabled:opacity-100 transition-opacity">
               <span className="text-white text-xs font-medium">
@@ -234,10 +238,22 @@ function LeftPanel({ student }: { student: StudentData }) {
               Use this photo?
             </p>
             <div className="flex gap-2 w-full">
-              <Button variant="outline" size="sm" onClick={handleCancelPreview} disabled={uploading} className="flex-1">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCancelPreview}
+                disabled={uploading}
+                className="flex-1"
+              >
                 Cancel
               </Button>
-              <Button variant="default" size="sm" onClick={handleConfirmUpload} disabled={uploading} className="flex-1">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleConfirmUpload}
+                disabled={uploading}
+                className="flex-1"
+              >
                 {uploading ? "Uploading…" : "Confirm"}
               </Button>
             </div>
@@ -255,10 +271,21 @@ function LeftPanel({ student }: { student: StudentData }) {
           <span className="text-white font-semibold text-sm">About</span>
           {editing ? (
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={handleCancel} disabled={saving} className="text-white/50 hover:text-white">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCancel}
+                disabled={saving}
+                className="text-white/50 hover:text-white"
+              >
                 Cancel
               </Button>
-              <Button variant="default" size="sm" onClick={handleSave} disabled={saving}>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handleSave}
+                disabled={saving}
+              >
                 {saving ? "Saving…" : "Save"}
               </Button>
             </div>
@@ -489,7 +516,9 @@ function AcademicSection({ student }: { student: StudentData }) {
               onChange={(e) => setDateOfBirth(e.target.value)}
             />
           ) : (
-            <ValueText>{dateOfBirth ? formatDate(dateOfBirth) : "—"}</ValueText>
+            <ValueText>
+              {dateOfBirth ? formatDate(dateOfBirth) : "—"}
+            </ValueText>
           )}
         </Field>
       </div>
@@ -528,10 +557,21 @@ function SectionCard({
         <h2 className="text-white font-semibold text-base">{title}</h2>
         {editing ? (
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={onCancel} disabled={saving} className="text-white/50 hover:text-white">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCancel}
+              disabled={saving}
+              className="text-white/50 hover:text-white"
+            >
               Cancel
             </Button>
-            <Button variant="default" size="sm" onClick={onSave} disabled={saving}>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onSave}
+              disabled={saving}
+            >
               {saving ? "Saving…" : "Save"}
             </Button>
           </div>

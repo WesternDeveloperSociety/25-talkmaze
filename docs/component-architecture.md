@@ -30,6 +30,7 @@ Canonical axes already in use:
 | `Select` (trigger) | colour/surface (`light`/`dark`) | dimensions | `error` (state) |
 | `Card` | colour/surface (`light`/`dark`/`accent`/`secondary`) | `padding` (none/sm/md/lg) | `shadow` (none/sm/md/lg), `border` (bool) |
 | `Badge` | colour/role (`accent`/`secondary`/`light`/`warning`/`destructive`/`outline`) | dimensions (`sm`/`md`) | — |
+| `Avatar` | fallback surface (`navy`/`teal`) | dimensions + fallback text (`sm`/`md`/`lg`/`xl`) | `shape` (`circle`/`square`) |
 
 **Anti-pattern (do not do this):** baking size into a colour variant, e.g. a
 `dark` variant that is also smaller/tighter. Colour and size are independent —
@@ -409,6 +410,17 @@ migration (auth + profile forms) followed exactly this.
     The `warning` variant introduced a `--warning` semantic token aliased to the
     brand coral (`--talkmaze-coral`) — solid coral stays for emphasis figures; the
     pill uses a soft tint (`bg-warning/10` + `text-warning`).
+  - **`Avatar`** (profile image + fallback): `size` (`sm`/`md`/`lg`/`xl`, also
+    sets fallback text size) × `variant` (fallback surface — `navy` =
+    `bg-card`/`text-accent`, `teal` = `bg-accent`/`text-card`, matching the Figma
+    `icon/avatar` `color=navy`/`color=teal` states) × `shape` (`circle`/`square`).
+    Compound API mirrors shadcn (`Avatar`/`AvatarImage`/`AvatarFallback`), but
+    `AvatarImage` is backed by **`next/image`** (`fill`) to keep Supabase image
+    optimization — load/error state is owned by the image via a small context, not
+    a Radix probe (a probe would re-fetch the unoptimized original). `AvatarFallback`
+    renders initials (use `initials()` from `src/utils/formatName.ts`) or a default
+    `lucide` user icon when given no children. Non-square / off-palette one-offs
+    (e.g. the gray chat-bubble avatar in `ConversationMessage`) stay raw.
 - **Next (highest dup first):** `Modal`/`Dialog` shell (modal
   boxes + `fixed inset-0` backdrops), `Alert` (amber/red/emerald status banners),
   `SelectableCard`/`NavItem` (the pressed/active/link cards left raw above).

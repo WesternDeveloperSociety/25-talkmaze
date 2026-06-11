@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
-import Image from "next/image";
 import { Contact } from "@/src/lib/messaging/types";
+import { Avatar, AvatarImage, AvatarFallback } from "@/src/components/ui/avatar";
 
 export type ContactsListProps = {
   contacts?: Contact[];
@@ -32,32 +32,10 @@ export default function ContactsList({
           className="flex items-center w-full h-13 px-3 py-1.5
                      rounded-lg bg-white cursor-pointer"
         >
-          <div className="relative bg-[#1F2E3B] h-full w-9 rounded-md flex justify-center items-center overflow-hidden">
-            {c.avatar_url ? (
-              <Image
-                src={c.avatar_url}
-                alt={c.name}
-                fill
-                sizes="36px"
-                className="object-cover"
-              />
-            ) : (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#B1E7D6"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
-              </svg>
-            )}
-          </div>
+          <Avatar size="sm" shape="square" variant="navy" className="h-full">
+            <AvatarImage src={c.avatar_url} alt={c.name} sizes="36px" />
+            <AvatarFallback />
+          </Avatar>
           <p className="ml-3 text-[#1f2e3b]">{c.name}</p>
         </Link>
       ))}

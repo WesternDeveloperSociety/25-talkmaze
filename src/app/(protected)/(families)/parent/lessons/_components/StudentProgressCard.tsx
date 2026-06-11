@@ -1,9 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
 import LessonProgressBar from "@/src/app/(protected)/(families)/_components/LessonProgressBar";
 import { TokenIcon } from "@/src/components/common/TokenIcon";
 import { TokenMysteryStar } from "@/src/components/ui/icons";
 import { Badge } from "@/src/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/src/components/ui/avatar";
+import { initials } from "@/src/utils/formatName";
 
 interface TokenProp {
   id: string;
@@ -49,27 +50,10 @@ export default function StudentProgressCard({
       >
         <div className="bg-white rounded-2xl shadow-[0px_4px_4px_rgba(0,0,0,0.25)] p-6 flex flex-col gap-5 transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-xl">
           <div className="flex items-center gap-4">
-            <div
-              className="w-14 h-14 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
-              style={{ backgroundColor: "#B1E7D6" }}
-            >
-              {avatarUrl ? (
-                <Image
-                  src={avatarUrl}
-                  alt={name}
-                  width={56}
-                  height={56}
-                  className="object-cover w-full h-full"
-                />
-              ) : (
-                <span
-                  className="text-xl font-bold"
-                  style={{ color: "#2B4257" }}
-                >
-                  {name.charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
+            <Avatar size="lg" variant="teal" className="size-14 shrink-0">
+              <AvatarImage src={avatarUrl} alt={name} sizes="56px" />
+              <AvatarFallback>{initials(name, 1)}</AvatarFallback>
+            </Avatar>
             <div className="min-w-0">
               <h2
                 className="font-bold text-lg truncate"
@@ -113,24 +97,10 @@ export default function StudentProgressCard({
       <div className="bg-white rounded-2xl shadow-[0px_4px_4px_rgba(0,0,0,0.25)] p-6 flex flex-col gap-5 transition-all duration-200 group-hover:-translate-y-1 group-hover:shadow-xl">
         {/* Avatar + Name + Course */}
         <div className="flex items-center gap-4">
-          <div
-            className="w-14 h-14 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
-            style={{ backgroundColor: "#B1E7D6" }}
-          >
-            {avatarUrl ? (
-              <Image
-                src={avatarUrl}
-                alt={name}
-                width={56}
-                height={56}
-                className="object-cover w-full h-full"
-              />
-            ) : (
-              <span className="text-xl font-bold" style={{ color: "#2B4257" }}>
-                {name.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </div>
+          <Avatar size="lg" variant="teal" className="size-14 shrink-0">
+            <AvatarImage src={avatarUrl} alt={name} sizes="56px" />
+            <AvatarFallback>{initials(name, 1)}</AvatarFallback>
+          </Avatar>
           <div className="min-w-0">
             <h2
               className="font-bold text-lg truncate"
