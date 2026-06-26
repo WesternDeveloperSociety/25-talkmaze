@@ -335,6 +335,36 @@ describe("/reset-password accessibility", () => {
   });
 });
 
+// ── /auth/confirm accessibility ───────────────────────────────────────────────
+// The interstitial landed on by the recovery email link. It must be reachable:
+//   - unauthenticated: the token in the URL is the credential; the page renders
+//     a button and only verifies on POST (prefetch-safe).
+//   - authenticated regular user with no profile cookie: an already-logged-in
+//     user clicking a recovery link must still reach it (not bounced to
+//     /profiles by the profile gate). Guards the `/auth` profile-gate carve-out.
+
+describe("/auth/confirm accessibility", () => {
+  it("allows unauthenticated access to /auth/confirm (token is the credential)", async () => {
+    const res = await middleware(makeReq("/auth/confirm"));
+    expect(res.headers.get("location") ?? "").not.toContain("/login");
+  });
+
+  it("allows authenticated regular user with no profile cookie to access /auth/confirm", async () => {
+    const res = await middleware(makeReq("/auth/confirm", regularCookies));
+    expect(res.headers.get("location") ?? "").not.toContain("/profiles");
+  });
+
+  it("allows authenticated coach to access /auth/confirm", async () => {
+    const res = await middleware(makeReq("/auth/confirm", coachCookies));
+    expect(res.status).not.toBe(307);
+  });
+
+  it("allows authenticated admin to access /auth/confirm", async () => {
+    const res = await middleware(makeReq("/auth/confirm", adminCookies));
+    expect(res.status).not.toBe(307);
+  });
+});
+
 // ── /payments accessibility ────────────────────────────────────────────────────
 // /payments is intentionally in (public)/ so students without a subscription can
 // reach the paywall. The profile cookie gate must not block it.

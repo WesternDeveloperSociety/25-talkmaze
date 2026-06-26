@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { EyeIcon } from "@/src/components/ui/icons";
 import { Button } from "@/src/components/ui/button";
@@ -18,10 +19,12 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [linkExpired, setLinkExpired] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setLinkExpired(false);
 
     if (password.length < 8) {
       setError("Password must be at least 8 characters long.");
@@ -42,7 +45,20 @@ export default function ResetPasswordPage() {
         "/login?message=Password reset successful. Please login with your new password.",
       );
     } else {
-      setError(result.error || "Failed to update password. Please try again.");
+      // No session usually means the reset link was never validated (expired,
+      // already used, or opened directly) - point the user back to request a
+      // fresh link instead of showing a raw Supabase error.
+      const raw = result.error ?? "";
+      const sessionMissing =
+        /auth session missing|not authenticated|jwt|session_not_found/i.test(
+          raw,
+        );
+      setLinkExpired(sessionMissing);
+      setError(
+        sessionMissing
+          ? "Your reset link is invalid or has expired. Please request a new one."
+          : raw || "Failed to update password. Please try again.",
+      );
     }
     setIsSubmitting(false);
   }
@@ -81,6 +97,18 @@ export default function ResetPasswordPage() {
                 className="rounded-[10px] font-medium"
               >
                 {error}
+                {linkExpired && (
+                  <>
+                    {" "}
+                    <Link
+                      href="/forgot-password"
+                      className="underline font-bold"
+                    >
+                      Request a new link
+                    </Link>
+                    .
+                  </>
+                )}
               </Alert>
             )}
 

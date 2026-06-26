@@ -33,14 +33,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Routes that are intentionally public to logged-in users too: /reset-password
-  // can be opened from a Supabase email link while a session is already active,
-  // and /api / /_next are framework internals.
+  // Routes that are intentionally public to loggedin users too: /reset-password
+  // and /auth/confirm can be opened from a Supabase email link while a session
+  // is already active, and /api / /_next are framework internals.
   const isProfileLockedRoute =
     !pathname.startsWith("/login") &&
     !pathname.startsWith("/signup") &&
     !pathname.startsWith("/forgot-password") &&
     !pathname.startsWith("/reset-password") &&
+    !pathname.startsWith("/auth") &&
     !pathname.startsWith("/payments") &&
     !pathname.startsWith("/profiles") &&
     !pathname.startsWith("/onboarding") &&
@@ -134,9 +135,7 @@ export async function middleware(request: NextRequest) {
   // Profile cookie gate (regular users only, on profile-locked routes).
   if (user && isRegularUser && isProfileLockedRoute) {
     const activeProfileId = request.cookies.get("active_profile_id")?.value;
-    const activeProfileType = request.cookies.get(
-      "active_profile_type",
-    )?.value;
+    const activeProfileType = request.cookies.get("active_profile_type")?.value;
 
     if (!activeProfileId) {
       const url = request.nextUrl.clone();
