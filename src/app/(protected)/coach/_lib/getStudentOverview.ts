@@ -2,6 +2,7 @@ import "server-only";
 
 import { createClient } from "@/src/services/supabase/server";
 import type { Database } from "@/src/services/supabase/types/database";
+import { computeAttendanceStreak } from "@/src/utils/attendanceStreak";
 
 type Lesson = Database["public"]["Tables"]["lessons"]["Row"];
 
@@ -49,7 +50,10 @@ function formatWallClock(time: string | null): string | null {
 }
 
 /** Orders a course's lessons by its head -> next linked list, created_at fallback. */
-function orderLessons(lessons: Lesson[], headLessonId: string | null): Lesson[] {
+function orderLessons(
+  lessons: Lesson[],
+  headLessonId: string | null,
+): Lesson[] {
   const byId = new Map(lessons.map((l) => [l.id, l]));
   const ordered: Lesson[] = [];
   const seen = new Set<string>();
@@ -112,8 +116,7 @@ export async function getStudentOverview(
       .from("session_attendance")
       .select("status, session_date")
       .eq("student_id", studentId)
-      .order("session_date", { ascending: false })
-      .limit(12),
+      .order("session_date", { ascending: false }),
     supabase
       .from("booked_slots")
       .select("weekday, start_time")
@@ -128,13 +131,7 @@ export async function getStudentOverview(
       .limit(5),
   ]);
 
-  // Streak: consecutive "attended" from newest, skipping "cancelled".
-  let streak = 0;
-  for (const record of attendance ?? []) {
-    if (record.status === "attended") streak++;
-    else if (record.status === "cancelled") continue;
-    else break;
-  }
+  const streak = computeAttendanceStreak(attendance ?? []);
 
   // Sessions total comes from the subscription's plan (e.g. 24 classes).
   let sessionsTotal: number | null = null;
@@ -190,27 +187,28 @@ async function loadActiveCourse(
 ): Promise<StudentOverviewActiveCourse | null> {
   if (!activeCourseId) return null;
 
-  const [{ data: course }, { data: lessons }, { data: progress }, { data: badge }] =
-    await Promise.all([
-      supabase
-        .from("courses")
-        .select("id, title, description, head_lesson_id")
-        .eq("id", activeCourseId)
-        .maybeSingle(),
-      supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", activeCourseId),
-      supabase
-        .from("lesson_progress")
-        .select("lesson_id, status")
-        .eq("student_id", studentId),
-      supabase
-        .from("badges")
-        .select("image_url")
-        .eq("course_id", activeCourseId)
-        .maybeSingle(),
-    ]);
+  const [
+    { data: course },
+    { data: lessons },
+    { data: progress },
+    { data: badge },
+  ] = await Promise.all([
+    supabase
+      .from("courses")
+      .select("id, title, description, head_lesson_id")
+      .eq("id", activeCourseId)
+      .maybeSingle(),
+    supabase.from("lessons").select("*").eq("course_id", activeCourseId),
+    supabase
+      .from("lesson_progress")
+      .select("lesson_id, status")
+      .eq("student_id", studentId),
+    supabase
+      .from("badges")
+      .select("image_url")
+      .eq("course_id", activeCourseId)
+      .maybeSingle(),
+  ]);
 
   if (!course) return null;
 
@@ -224,9 +222,7 @@ async function loadActiveCourse(
     (l) => statusByLesson.get(l.id) === 3,
   ).length;
 
-  const currentIndex = ordered.findIndex(
-    (l) => statusByLesson.get(l.id) !== 3,
-  );
+  const currentIndex = ordered.findIndex((l) => statusByLesson.get(l.id) !== 3);
   const current = currentIndex >= 0 ? ordered[currentIndex] : null;
 
   return {

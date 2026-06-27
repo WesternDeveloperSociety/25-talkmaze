@@ -1,7 +1,7 @@
 /**
  * Integration tests for /api/attendance (GET, POST, DELETE).
  *
- * GET   — any authenticated user; returns last 12 records + streak count
+ * GET   — any authenticated user; returns attendance records + streak count
  * POST  — coach (role=2) or admin (role=3) only; upserts a record and adjusts
  *         sessions_remaining when the "consuming" state changes
  * DELETE — coach or admin only; removes a record and restores sessions_remaining

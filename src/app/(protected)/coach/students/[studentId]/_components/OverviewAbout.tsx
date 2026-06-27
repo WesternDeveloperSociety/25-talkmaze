@@ -55,10 +55,7 @@ export default function OverviewAbout({
         )}
         <div>
           <Row label="Sessions remaining" value={sessionsValue} />
-          <Row
-            label="Current streak"
-            value={`${streak} ${streak === 1 ? "week" : "weeks"}`}
-          />
+          <Row label="Attendance streak" value={streak} />
           <Row label="Preferred time" value={preferredTime ?? "Not set"} />
           <Row label="Parent" value={parentName ?? "—"} />
         </div>

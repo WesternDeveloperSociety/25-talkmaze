@@ -6,6 +6,7 @@ import ParentDashboardClient, {
 import { AttendanceItem } from "./_components/StudentAttendanceDetails";
 import type { CoachingSession } from "@/src/lib/scheduling/types";
 import { fullName } from "@/src/utils/formatName";
+import { computeAttendanceStreak } from "@/src/utils/attendanceStreak";
 import { getCurrentUser } from "@/src/lib/auth/server/getCurrentUser";
 import type { Metadata } from "next";
 
@@ -100,8 +101,7 @@ export default async function ParentDashboard() {
         "student_id, session_date, session_id, status, coaches(first_name, last_name)",
       )
       .in("student_id", studentIds)
-      .order("session_date", { ascending: false })
-      .limit(100);
+      .order("session_date", { ascending: false });
 
     // Hide sessions that have already been marked by a coach
     const markedSessionIds = new Set(
@@ -112,20 +112,15 @@ export default async function ParentDashboard() {
     schedule = schedule.filter((s) => !markedSessionIds.has(Number(s.id)));
 
     for (const student of students) {
-      // Get this student's records (newest first), cap at 12
-      const records = (attendanceRaw ?? [])
-        .filter((r) => r.student_id === student.id)
-        .slice(0, 12);
+      // Full attendance history for this student (newest first).
+      const studentRecords = (attendanceRaw ?? []).filter(
+        (r) => r.student_id === student.id,
+      );
 
-      // Streak: consecutive "attended" from the most recent record.
-      // Cancelled sessions are skipped — they don't count toward or break the streak.
-      let streak = 0;
-      for (const r of records) {
-        if (r.status === "attended") streak++;
-        else if (r.status === "cancelled") continue;
-        else break; // "missed" breaks the streak
-      }
-      streakByStudent[student.id] = streak;
+      streakByStudent[student.id] = computeAttendanceStreak(studentRecords);
+
+      // Display tracker shows the most recent 12 records as fixed slots
+      const records = studentRecords.slice(0, 12);
 
       // Build display array: oldest first, padded with "future" slots to fill 12
       const pastItems: AttendanceItem[] = [...records].reverse().map((r) => {

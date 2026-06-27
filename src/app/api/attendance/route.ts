@@ -9,6 +9,7 @@ import {
   assertOwnsStudent,
   assertCoachAssignedToStudent,
 } from "@/src/lib/auth/server/ownership";
+import { computeAttendanceStreak } from "@/src/utils/attendanceStreak";
 
 const GetQuerySchema = z
   .object({ student_id: z.string().uuid() })
@@ -77,8 +78,7 @@ export async function GET(request: NextRequest) {
       .from("session_attendance")
       .select("id, session_date, session_id, status, notes, coach_id")
       .eq("student_id", parsed.data.student_id)
-      .order("session_date", { ascending: false })
-      .limit(12);
+      .order("session_date", { ascending: false });
 
     if (error) {
       console.error("attendance GET query error", error);
@@ -88,16 +88,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let streak = 0;
-    for (const record of records ?? []) {
-      if (record.status === "attended") {
-        streak++;
-      } else if (record.status === "cancelled") {
-        continue;
-      } else {
-        break;
-      }
-    }
+    const streak = computeAttendanceStreak(records ?? []);
 
     return NextResponse.json({ attendance: records ?? [], streak });
   } catch (error: unknown) {
