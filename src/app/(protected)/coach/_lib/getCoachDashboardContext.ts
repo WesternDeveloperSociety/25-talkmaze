@@ -8,7 +8,10 @@ import type { Database } from "@/src/services/supabase/types/database";
 type Student = Database["public"]["Tables"]["students"]["Row"];
 
 /** A student row plus the title of their active course (for the list subtitle). */
-export type CoachStudent = Student & { activeCourseTitle: string | null };
+export type CoachStudent = Student & {
+  activeCourseTitle: string | null;
+  hasActiveSubscription: boolean;
+};
 
 interface CoachAccount {
   id: string;
@@ -34,7 +37,7 @@ export const getCoachDashboardContext = cache(
     const user = await getCurrentUser();
     if (!user) throw new Error("User not found");
 
-  const supabase = await createClient();
+    const supabase = await createClient();
 
     const [{ data: account }, { data: coachData }] = await Promise.all([
       supabase.from("account").select("id, email").eq("id", user.id).single(),
@@ -69,7 +72,8 @@ export const getCoachDashboardContext = cache(
       return a.id < b.id ? -1 : 1;
     });
 
-    // Resolve active-course titles in one batched query for the list subtitle.
+    // Resolve active-course titles + active-subscription status in two batched
+    // queries (run in parallel) for the list subtitle and status dot.
     const courseIds = [
       ...new Set(
         sorted
@@ -77,20 +81,33 @@ export const getCoachDashboardContext = cache(
           .filter((id): id is string => Boolean(id)),
       ),
     ];
+    const studentIds = sorted.map((s) => s.id);
+
+    const [{ data: courses }, { data: activeSubs }] = await Promise.all([
+      courseIds.length > 0
+        ? supabase.from("courses").select("id, title").in("id", courseIds)
+        : Promise.resolve({ data: [] as { id: string; title: string }[] }),
+      studentIds.length > 0
+        ? supabase
+            .from("student_subscriptions")
+            .select("student_id")
+            .in("student_id", studentIds)
+            .eq("status", "active")
+        : Promise.resolve({ data: [] as { student_id: string }[] }),
+    ]);
+
     const courseTitleById = new Map<string, string>();
-    if (courseIds.length > 0) {
-      const { data: courses } = await supabase
-        .from("courses")
-        .select("id, title")
-        .in("id", courseIds);
-      for (const c of courses ?? []) courseTitleById.set(c.id, c.title);
-    }
+    for (const c of courses ?? []) courseTitleById.set(c.id, c.title);
+
+    const activeSubStudentIds = new Set<string>();
+    for (const sub of activeSubs ?? []) activeSubStudentIds.add(sub.student_id);
 
     const students: CoachStudent[] = sorted.map((s) => ({
       ...s,
       activeCourseTitle: s.active_course_id
-        ? courseTitleById.get(s.active_course_id) ?? null
+        ? (courseTitleById.get(s.active_course_id) ?? null)
         : null,
+      hasActiveSubscription: activeSubStudentIds.has(s.id),
     }));
 
     return {
