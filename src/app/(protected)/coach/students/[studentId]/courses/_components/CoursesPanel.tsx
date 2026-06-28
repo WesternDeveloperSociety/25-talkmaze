@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import AssignCourseModal from "@/src/app/(protected)/coach/_components/AssignCourseModal";
-import type { CoachCourseListItem } from "@/src/app/(protected)/coach/_components/student-details/types";
+import AssignCourseModal from "./AssignCourseModal";
+import type { CoachCourseListItem } from "./types";
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
 import type { Database } from "@/src/services/supabase/types/database";
@@ -54,10 +54,7 @@ export default function CoursesPanel({ student }: { student: Student }) {
         <h3 className="text-sm font-semibold text-[#2B4257]">
           Assigned courses
         </h3>
-        <Button
-          size="sm"
-          onClick={() => setIsAssignOpen(true)}
-        >
+        <Button size="sm" onClick={() => setIsAssignOpen(true)}>
           Assign Course
         </Button>
       </div>

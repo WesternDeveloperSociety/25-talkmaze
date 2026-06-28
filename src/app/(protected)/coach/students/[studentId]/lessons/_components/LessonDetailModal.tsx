@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { Button } from "@/src/components/ui/button";
-import ExternalLinkIcon from "@/src/app/(protected)/coach/_components/ui/ExternalLinkIcon";
+import { ExternalLinkIcon } from "@/src/components/ui/icons";
 import { LESSON_STATUS_OPTIONS } from "@/src/lib/lessons/lessonStatus";
 
 export interface LessonModalData {

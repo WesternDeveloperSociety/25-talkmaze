@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/src/services/supabase/server";
 import LessonDetailClient from "./LessonDetailClient";
-import { getCoachDashboardContext } from "../../../../_lib/getCoachDashboardContext";
+import { getCoachDashboardContext } from "../../../_lib/getCoachDashboardContext";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -17,15 +17,6 @@ async function resolveStorageUrl(supabase: any, path: string | null) {
   return data?.publicUrl ?? null;
 }
 
-/**
- * CoachLessonDetailPage -
- * Server component for /coach/students/[studentId]/lessons/[lessonId]
- *
- * Fetches lesson info, student name, progress/feedback, and task rows from the DB,
- * then hands everything to LessonDetailClient for interactive editing.
- *
- * Calls notFound() (404) if either the lesson or student doesn't exist.
- */
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -45,6 +36,15 @@ export async function generateMetadata({
   }
 }
 
+/**
+ * CoachLessonDetailPage -
+ * Server component for /coach/students/[studentId]/lessons/[lessonId]
+ *
+ * Fetches lesson info, student name, progress/feedback, and task rows from the DB,
+ * then hands everything to LessonDetailClient for interactive editing.
+ *
+ * Calls notFound() (404) if either the lesson or student doesn't exist.
+ */
 export default async function CoachLessonDetailPage({ params }: PageProps) {
   const { studentId, lessonId } = await params;
   const supabase = await createClient();
@@ -102,23 +102,37 @@ export default async function CoachLessonDetailPage({ params }: PageProps) {
   }
 
   // Resolve effective task rows: student override takes priority over admin default
-  const tasks: { id: string; type: string; file_url: string | null; description: string | null; student_id: string | null }[] =
-    tasksData ?? [];
+  const tasks: {
+    id: string;
+    type: string;
+    file_url: string | null;
+    description: string | null;
+    student_id: string | null;
+  }[] = tasksData ?? [];
 
-  const defaultPreTask = tasks.find((t) => t.type === "pre" && t.student_id === null) ?? null;
-  const defaultPostTask = tasks.find((t) => t.type === "post" && t.student_id === null) ?? null;
-  const overridePreTask = tasks.find((t) => t.type === "pre" && t.student_id === studentId) ?? null;
-  const overridePostTask = tasks.find((t) => t.type === "post" && t.student_id === studentId) ?? null;
+  const defaultPreTask =
+    tasks.find((t) => t.type === "pre" && t.student_id === null) ?? null;
+  const defaultPostTask =
+    tasks.find((t) => t.type === "post" && t.student_id === null) ?? null;
+  const overridePreTask =
+    tasks.find((t) => t.type === "pre" && t.student_id === studentId) ?? null;
+  const overridePostTask =
+    tasks.find((t) => t.type === "post" && t.student_id === studentId) ?? null;
 
   // Resolve storage URLs in parallel
-  const [slideshowUrl, defaultPreUrl, defaultPostUrl, overridePreUrl, overridePostUrl] =
-    await Promise.all([
-      resolveStorageUrl(supabase, lesson.slide_show_url),
-      resolveStorageUrl(supabase, defaultPreTask?.file_url ?? null),
-      resolveStorageUrl(supabase, defaultPostTask?.file_url ?? null),
-      resolveStorageUrl(supabase, overridePreTask?.file_url ?? null),
-      resolveStorageUrl(supabase, overridePostTask?.file_url ?? null),
-    ]);
+  const [
+    slideshowUrl,
+    defaultPreUrl,
+    defaultPostUrl,
+    overridePreUrl,
+    overridePostUrl,
+  ] = await Promise.all([
+    resolveStorageUrl(supabase, lesson.slide_show_url),
+    resolveStorageUrl(supabase, defaultPreTask?.file_url ?? null),
+    resolveStorageUrl(supabase, defaultPostTask?.file_url ?? null),
+    resolveStorageUrl(supabase, overridePreTask?.file_url ?? null),
+    resolveStorageUrl(supabase, overridePostTask?.file_url ?? null),
+  ]);
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto bg-[#F4F7FA]">
@@ -140,9 +154,7 @@ export default async function CoachLessonDetailPage({ params }: PageProps) {
         initialPositiveFeedback={progress?.positive_feedback ?? ""}
         initialImprovementFeedback={progress?.improvement_feedback ?? ""}
         defaultPreTask={
-          defaultPreTask
-            ? { ...defaultPreTask, file_url: defaultPreUrl }
-            : null
+          defaultPreTask ? { ...defaultPreTask, file_url: defaultPreUrl } : null
         }
         defaultPostTask={
           defaultPostTask

@@ -2,6 +2,7 @@ export { AttendanceMysteryStarIcon } from "./AttendanceMysteryStarIcon";
 export { AttendedIcon } from "./AttendedIcon";
 export { CaretIcon } from "./CaretIcon";
 export { EditIcon } from "./EditIcon";
+export { ExternalLinkIcon } from "./ExternalLinkIcon";
 export { EyeIcon } from "./EyeIcon";
 export { HomeIcon } from "./HomeIcon";
 export { LessonsIcon } from "./LessonsIcon";

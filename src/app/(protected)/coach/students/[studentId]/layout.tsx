@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import StudentHeaderBanner from "./_components/StudentHeaderBanner";
 import StudentTabStrip from "./_components/StudentTabStrip";
-import { getCoachDashboardContext } from "../../_lib/getCoachDashboardContext";
+import { getCoachDashboardContext } from "../_lib/getCoachDashboardContext";
 
 interface CoachStudentLayoutProps {
   children: ReactNode;
@@ -10,10 +10,8 @@ interface CoachStudentLayoutProps {
 }
 
 /**
- * Per-student chrome (the right panel of the students split layout): the green
+ * Per-student chrome (the right panel of the students split layout): the 
  * header banner + the tab strip, with the active tab's content as {children}.
- * The "My Students" list lives one level up in students/layout.tsx, so
- * switching tabs never remounts it.
  */
 export default async function CoachStudentLayout({
   children,

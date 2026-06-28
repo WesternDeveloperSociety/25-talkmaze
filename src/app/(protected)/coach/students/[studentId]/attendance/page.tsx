@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import AttendancePanel from "../../../_components/student-details/AttendancePanel";
-import { getCoachDashboardContext } from "../../../_lib/getCoachDashboardContext";
+import AttendancePanel from "./_components/AttendancePanel";
+import { getCoachDashboardContext } from "../../_lib/getCoachDashboardContext";
 import { fullName } from "@/src/utils/formatName";
 import type { Metadata } from "next";
 
@@ -17,7 +17,7 @@ export async function generateMetadata({
     const student = students.find((s) => s.id === studentId);
     if (!student) return { title: "Attendance" };
     return {
-      title: `${fullName(student.first_name, student.last_name, "Student")} — Attendance`,
+      title: `${fullName(student.first_name, student.last_name, "Student")} - Attendance`,
     };
   } catch {
     return { title: "Attendance" };

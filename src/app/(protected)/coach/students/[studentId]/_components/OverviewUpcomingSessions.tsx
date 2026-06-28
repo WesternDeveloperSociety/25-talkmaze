@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { Badge } from "@/src/components/ui/badge";
 import { Card } from "@/src/components/ui/card";
 import { fmtLocalTime } from "@/src/utils/formatDateTime";
-import type { StudentOverviewUpcomingSession } from "../../../_lib/getStudentOverview";
+import type { StudentOverviewUpcomingSession } from "../_lib/getStudentOverview";
 
 interface OverviewUpcomingSessionsProps {
   sessions: StudentOverviewUpcomingSession[];
@@ -58,7 +58,9 @@ export default function OverviewUpcomingSessions({
                   <span className="text-[10px] font-semibold text-[#2B4257]/60">
                     {month}
                   </span>
-                  <span className="text-lg font-bold text-[#1F2E3B]">{day}</span>
+                  <span className="text-lg font-bold text-[#1F2E3B]">
+                    {day}
+                  </span>
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-[#1F2E3B]">

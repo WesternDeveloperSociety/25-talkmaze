@@ -1,10 +1,11 @@
 import { ReactNode } from "react";
-import MyStudents from "../_components/MyStudents";
-import { getCoachDashboardContext } from "../_lib/getCoachDashboardContext";
+import MyStudents from "./_components/MyStudents";
+import { getCoachDashboardContext } from "./_lib/getCoachDashboardContext";
 
 /**
- * Split-screen shell for the students area (mirrors the /coach/message layout):
- * the persistent "My Students" list on the left, and the selected student's
+ * Split-screen shell for the students area.
+ *
+ * The persistent "My Students" list on the left, and the selected student's
  * detail (or the empty state) as {children} on the right. Selection is
  * URL-driven, so this layout never owns it and never redirects.
  */

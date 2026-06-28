@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getCoachDashboardContext } from "../../../_lib/getCoachDashboardContext";
+import { getCoachDashboardContext } from "../../_lib/getCoachDashboardContext";
 import { getStudentLessonsByCourse } from "@/src/lib/lessons/server/getStudentLessonsByCourse";
 import { createClient } from "@/src/services/supabase/server";
 import LessonTasksClient from "./_components/LessonTasksClient";

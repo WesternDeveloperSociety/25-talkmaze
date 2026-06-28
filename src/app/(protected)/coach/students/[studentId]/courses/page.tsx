@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import CoursesPanel from "./_components/CoursesPanel";
-import { getCoachDashboardContext } from "../../../_lib/getCoachDashboardContext";
+import { getCoachDashboardContext } from "../../_lib/getCoachDashboardContext";
 import { fullName } from "@/src/utils/formatName";
 import type { Metadata } from "next";
 
@@ -17,7 +17,7 @@ export async function generateMetadata({
     const student = students.find((s) => s.id === studentId);
     if (!student) return { title: "Courses" };
     return {
-      title: `${fullName(student.first_name, student.last_name, "Student")} — Courses`,
+      title: `${fullName(student.first_name, student.last_name, "Student")} - Courses`,
     };
   } catch {
     return { title: "Courses" };

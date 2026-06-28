@@ -8,8 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/src/components/ui/card";
-import { getCoachDashboardContext } from "../../_lib/getCoachDashboardContext";
-import { getStudentOverview } from "../../_lib/getStudentOverview";
+import { getCoachDashboardContext } from "../_lib/getCoachDashboardContext";
+import { getStudentOverview } from "./_lib/getStudentOverview";
 import { fullName } from "@/src/utils/formatName";
 import type { Metadata } from "next";
 import OverviewAbout from "./_components/OverviewAbout";
@@ -27,7 +27,9 @@ export async function generateMetadata({
     const { students } = await getCoachDashboardContext();
     const student = students.find((s) => s.id === studentId);
     if (!student) return { title: "Student" };
-    return { title: fullName(student.first_name, student.last_name, "Student") };
+    return {
+      title: fullName(student.first_name, student.last_name, "Student"),
+    };
   } catch {
     return { title: "Student" };
   }
@@ -38,8 +40,9 @@ export default async function CoachStudentOverviewPage({
 }: OverviewPageProps) {
   const { studentId } = await params;
 
-  // Ownership gate via the cached context (also resolved by the layout).
+  // Ownership gate via the cached context
   const { students } = await getCoachDashboardContext();
+
   if (!students.some((s) => s.id === studentId)) notFound();
 
   const overview = await getStudentOverview(studentId);

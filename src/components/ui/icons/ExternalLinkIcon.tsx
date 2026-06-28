@@ -2,7 +2,7 @@ interface ExternalLinkIconProps {
   size?: number;
 }
 
-export default function ExternalLinkIcon({ size = 12 }: ExternalLinkIconProps) {
+export function ExternalLinkIcon({ size = 12 }: ExternalLinkIconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

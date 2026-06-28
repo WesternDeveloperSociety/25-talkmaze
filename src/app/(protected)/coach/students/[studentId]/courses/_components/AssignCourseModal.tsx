@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { fullName } from "@/src/utils/formatName";
 import { fmtLocalDate } from "@/src/utils/formatDateTime";
-import type { CoachCourseListItem } from "./student-details/types";
+import type { CoachCourseListItem } from "./types";
 import type { Database } from "@/src/services/supabase/types/database";
 
 type Student = Database["public"]["Tables"]["students"]["Row"];
@@ -191,10 +191,8 @@ export default function AssignCourseModal({
                   </h3>
                   <div className="space-y-3">
                     {assignedCourses.map((course) => {
-                      const isConfirming =
-                        confirmingUnassignId === course.id;
-                      const isUnassigning =
-                        unassigningCourseId === course.id;
+                      const isConfirming = confirmingUnassignId === course.id;
+                      const isUnassigning = unassigningCourseId === course.id;
                       const assignment = course.assignment!;
                       return (
                         <div
@@ -213,9 +211,7 @@ export default function AssignCourseModal({
                             <div className="mt-3 flex gap-2">
                               <button
                                 disabled={busy}
-                                onClick={() =>
-                                  setConfirmingUnassignId(null)
-                                }
+                                onClick={() => setConfirmingUnassignId(null)}
                                 className="flex-1 min-h-11 md:min-h-0 border border-gray-300 text-gray-700 text-xs font-medium py-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
                               >
                                 Cancel
@@ -233,9 +229,7 @@ export default function AssignCourseModal({
                           ) : (
                             <button
                               disabled={busy}
-                              onClick={() =>
-                                setConfirmingUnassignId(course.id)
-                              }
+                              onClick={() => setConfirmingUnassignId(course.id)}
                               className="mt-3 w-full min-h-11 md:min-h-0 border border-red-300 text-red-700 text-xs font-medium py-2 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
                             >
                               Unassign
@@ -277,9 +271,7 @@ export default function AssignCourseModal({
                           ) : (
                             <p className="text-xs text-gray-400 mt-1">
                               Created{" "}
-                              {new Date(
-                                course.created_at,
-                              ).toLocaleDateString()}
+                              {new Date(course.created_at).toLocaleDateString()}
                             </p>
                           )}
                           <button
