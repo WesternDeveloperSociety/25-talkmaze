@@ -33,7 +33,7 @@ export default function StudentTabStrip({ studentId }: StudentTabStripProps) {
 
   const tabs = [
     { value: "overview", label: "Overview", href: base },
-    { value: "lessons", label: "Lesson Tasks", href: `${base}/lessons` },
+    { value: "lessons", label: "Lessons", href: `${base}/lessons` },
     { value: "courses", label: "Courses", href: `${base}/courses` },
     { value: "attendance", label: "Scheduling & Attendance", href: `${base}/attendance` },
   ];
