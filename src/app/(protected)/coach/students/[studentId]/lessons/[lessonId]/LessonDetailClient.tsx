@@ -4,12 +4,7 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import RichTextEditor from "@/src/components/common/rich-text/RichTextEditor";
 import RichTextDisplay from "@/src/components/common/rich-text/RichTextDisplay";
-
-const STATUS_LABELS: Record<number, string> = {
-  1: "Not Started",
-  2: "In Progress",
-  3: "Completed",
-};
+import { LESSON_STATUS_LABELS as STATUS_LABELS } from "@/src/lib/lessons/lessonStatus";
 
 const STATUS_STYLES: Record<number, string> = {
   1: "bg-gray-100 text-gray-600",

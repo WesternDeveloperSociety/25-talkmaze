@@ -22,6 +22,12 @@ interface CoursePickerProps {
    * student's stored selection).
    */
   persist?: boolean;
+  /**
+   * Surface theme. `dark` (default) suits the family dashboard's dark panels;
+   * `light` suits the coach content area (white cards), where the dark styling
+   * would be invisible.
+   */
+  variant?: "light" | "dark";
   onChange: (courseId: string) => void;
 }
 
@@ -30,6 +36,7 @@ export default function CoursePicker({
   options,
   activeCourseId,
   persist = false,
+  variant = "dark",
   onChange,
 }: CoursePickerProps) {
   const [saving, setSaving] = useState(false);
@@ -65,28 +72,44 @@ export default function CoursePicker({
     }
   };
 
+  const isLight = variant === "light";
+
   return (
     <div className="flex items-center gap-2 flex-wrap">
-      <label className="text-xs font-semibold text-white/60 uppercase tracking-wide">
+      <label
+        className={`text-xs font-semibold uppercase tracking-wide ${
+          isLight ? "text-[#2B4257]/60" : "text-white/60"
+        }`}
+      >
         Course
       </label>
       <select
         value={activeCourseId ?? ""}
         disabled={saving}
         onChange={(e) => handleChange(e.target.value)}
-        className="min-h-11 md:min-h-0 px-3 py-1.5 rounded-lg text-sm font-medium bg-white/10 text-white border border-white/20 hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-[#B1E7D6]/50 disabled:opacity-50 transition-colors"
+        className={`min-h-11 md:min-h-0 px-3 py-1.5 rounded-lg text-sm font-medium border focus:outline-none focus:ring-2 disabled:opacity-50 transition-colors ${
+          isLight
+            ? "bg-white text-[#2B4257] border-[#2B4257]/20 hover:bg-[#2B4257]/5 focus:ring-[#65CFAD]/50"
+            : "bg-white/10 text-white border-white/20 hover:bg-white/15 focus:ring-[#B1E7D6]/50"
+        }`}
       >
         {options.map((opt) => (
           <option
             key={opt.course_id}
             value={opt.course_id}
-            className="bg-[#1F2E3B] text-white"
+            className={isLight ? "text-[#2B4257]" : "bg-[#1F2E3B] text-white"}
           >
             {opt.course_title}
           </option>
         ))}
       </select>
-      {error && <span className="text-xs text-red-300">{error}</span>}
+      {error && (
+        <span
+          className={`text-xs ${isLight ? "text-red-600" : "text-red-300"}`}
+        >
+          {error}
+        </span>
+      )}
     </div>
   );
 }

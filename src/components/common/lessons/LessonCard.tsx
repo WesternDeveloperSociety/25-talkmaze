@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, type ReactNode } from "react";
 import { TokenIcon } from "@/src/components/common/TokenIcon";
 import { TokenMysteryStar } from "@/src/components/ui/icons";
 
@@ -12,6 +12,11 @@ type Props = {
   onClick: () => void;
   isCompleted?: boolean;
   isLocked?: boolean;
+  /**
+   * Custom indicator rendered next to the lesson number, replacing the default
+   * completed/empty box. Lets callers supply their own status visual.
+   */
+  statusSlot?: ReactNode;
 };
 
 const LessonCard = memo(function LessonCard({
@@ -22,6 +27,7 @@ const LessonCard = memo(function LessonCard({
   onClick,
   isCompleted,
   isLocked,
+  statusSlot,
 }: Props) {
   return (
     <div
@@ -43,25 +49,27 @@ const LessonCard = memo(function LessonCard({
           Lesson {lessonNumber}
         </div>
 
-        {/* Filled checkmark if completed, empty box if not */}
-        <div className="w-6 h-6 bg-white rounded-lg shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-          {isCompleted ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#2B4257"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="w-4 h-4"
-            >
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          ) : (
-            <div className="w-3.5 h-3.5 border-2 border-[#2B4257] rounded-sm" />
-          )}
-        </div>
+        {/* Status indicator: caller-supplied slot, or default completed/empty box */}
+        {statusSlot ?? (
+          <div className="w-6 h-6 bg-white rounded-lg shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+            {isCompleted ? (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#2B4257"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="w-4 h-4"
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <div className="w-3.5 h-3.5 border-2 border-[#2B4257] rounded-sm" />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Reward token for the lesson */}
