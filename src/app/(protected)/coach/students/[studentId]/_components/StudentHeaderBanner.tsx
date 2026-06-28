@@ -85,7 +85,7 @@ export default function StudentHeaderBanner({
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
       {/* Mint gradient cover */}
-      <div className="h-20 bg-gradient-to-r from-[#65CFAD] to-[#46B596]" />
+      <div className="h-20 bg-gradient-to-r from-[#59288b] to-[#7564c0]" />
 
       {/* White body, avatar straddling the cover */}
       <div className="flex flex-col gap-3 px-5 pb-5 sm:flex-row sm:items-end sm:justify-between">
