@@ -3,12 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import LessonCard from "@/src/app/(protected)/(families)/student/lessons/_components/LessonCard";
-import ProgressCard from "@/src/app/(protected)/(families)/student/lessons/_components/ProgressCard";
+import LessonCard from "@/src/components/common/lessons/LessonCard";
+import LessonProgressCard from "@/src/components/common/lessons/LessonProgressCard";
 import RichTextDisplay from "@/src/components/common/rich-text/RichTextDisplay";
 import CoursePicker, {
   type CoursePickerOption,
-} from "@/src/components/common/CoursePicker";
+} from "@/src/components/common/lessons/CoursePicker";
 import {
   Dialog,
   DialogContent,
@@ -109,7 +109,7 @@ export default function ParentStudentLessonsClient({
       ) : (
         <>
           {/* Progress bar */}
-          <ProgressCard
+          <LessonProgressCard
             completed={progress.completed}
             total={progress.total}
             width="w-full"

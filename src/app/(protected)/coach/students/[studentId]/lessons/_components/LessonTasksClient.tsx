@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import LessonCard from "@/src/app/(protected)/(families)/student/lessons/_components/LessonCard";
-import CoursePicker from "@/src/components/common/CoursePicker";
+import LessonCard from "@/src/components/common/lessons/LessonCard";
+import CoursePicker from "@/src/components/common/lessons/CoursePicker";
 import { SearchInput } from "@/src/components/ui/search-input";
 import type { CourseLessonsForStudent } from "@/src/lib/lessons/server/getStudentLessonsByCourse";
 import LessonStatusBadge from "./LessonStatusBadge";

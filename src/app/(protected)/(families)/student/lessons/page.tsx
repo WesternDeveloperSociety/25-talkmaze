@@ -5,10 +5,10 @@ import { useLessons } from "./_hooks/useLessons";
 import { useDocumentTitle } from "@/src/hooks/useDocumentTitle";
 import PageSpinner from "@/src/components/ui/PageSpinner";
 import { Alert } from "@/src/components/ui/alert";
-import ProgressCard from "./_components/ProgressCard";
+import LessonProgressCard from "@/src/components/common/lessons/LessonProgressCard";
 import TokensRow from "./_components/TokensRow";
-import LessonCard from "./_components/LessonCard";
-import CoursePicker from "@/src/components/common/CoursePicker";
+import LessonCard from "@/src/components/common/lessons/LessonCard";
+import CoursePicker from "@/src/components/common/lessons/CoursePicker";
 import { useActiveProfile } from "@/src/app/(protected)/(families)/_context/ActiveProfileContext";
 
 export default function LessonsPage() {
@@ -112,7 +112,7 @@ export default function LessonsPage() {
       )}
       <div className="flex flex-col lg:flex-row gap-6 w-full">
         <div className="grow">
-          <ProgressCard
+          <LessonProgressCard
             completed={progress.completed}
             total={progress.total}
             width="w-full"

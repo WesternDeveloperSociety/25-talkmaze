@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import PageSpinner from "@/src/components/ui/PageSpinner";
 import LessonProgressBar from "@/src/app/(protected)/(families)/_components/LessonProgressBar";
 import TokenBar from "@/src/app/(protected)/(families)/_components/TokensBar";
-import CoursePicker from "@/src/components/common/CoursePicker";
+import CoursePicker from "@/src/components/common/lessons/CoursePicker";
 import { useActiveProfile } from "@/src/app/(protected)/(families)/_context/ActiveProfileContext";
 import ReviewLessonCard from "./_components/ReviewLesson";
 import NextLessonCard from "./_components/UpNextLesson";

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/src/services/supabase/client";
 import type { CoachingSession } from "@/src/lib/scheduling/types";
 import { useActiveProfile } from "@/src/app/(protected)/(families)/_context/ActiveProfileContext";
-import type { CoursePickerOption } from "@/src/components/common/CoursePicker";
+import type { CoursePickerOption } from "@/src/components/common/lessons/CoursePicker";
 
 type LessonSummary = {
   id: string;

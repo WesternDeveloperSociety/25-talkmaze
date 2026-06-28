@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import CourseProgressCard from "@/src/components/common/CourseProgressCard";
+import CourseProgressCard from "@/src/components/common/lessons/CourseProgressCard";
 import { Button } from "@/src/components/ui/button";
 import {
   Card,

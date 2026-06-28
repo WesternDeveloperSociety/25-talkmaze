@@ -44,21 +44,18 @@ interface Props {
 function ResourceLink({ label, href }: { label: string; href: string | null }) {
   if (!href) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-lg border border-[#2B4257]/15 px-3 py-1.5 text-xs font-medium text-gray-400">
+      <Button variant="outline-light" size="sm" disabled className="text-xs">
         {label}
-      </span>
+      </Button>
     );
   }
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 rounded-lg border border-[#2B4257]/20 px-3 py-1.5 text-xs font-medium text-[#2B4257] transition-colors hover:bg-[#2B4257]/5"
-    >
-      {label}
-      <ExternalLinkIcon size={11} />
-    </a>
+    <Button asChild variant="outline-light" size="sm" className="text-xs">
+      <a href={href} target="_blank" rel="noopener noreferrer">
+        {label}
+        <ExternalLinkIcon size={11} />
+      </a>
+    </Button>
   );
 }
 

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useLessonDetail } from "../_hooks/useLessonDetail";
 import { usePageTitle } from "@/src/app/(protected)/(families)/_context/PageTitleContext";
 import { useDocumentTitle } from "@/src/hooks/useDocumentTitle";
-import ProgressCard from "../_components/ProgressCard";
+import LessonProgressCard from "@/src/components/common/lessons/LessonProgressCard";
 import TaskCard from "../_components/TaskCard";
 import { Card } from "@/src/components/ui/card";
 import { Alert } from "@/src/components/ui/alert";
@@ -106,7 +106,7 @@ export default function LessonDetailPage() {
   return (
     <div className="w-full max-w-[1400px] p-6 md:p-12 flex flex-col gap-8 mx-auto text-white">
       <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-right-8 duration-300">
-        <ProgressCard
+        <LessonProgressCard
           completed={progress.completed}
           total={progress.total}
           width="w-full"
