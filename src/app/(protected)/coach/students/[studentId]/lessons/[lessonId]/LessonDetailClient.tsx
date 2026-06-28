@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import Link from "next/link";
 import RichTextEditor from "@/src/components/common/rich-text/RichTextEditor";
 import RichTextDisplay from "@/src/components/common/rich-text/RichTextDisplay";
+import { Button } from "@/src/components/ui/button";
+import { ExternalLinkIcon } from "@/src/components/ui/icons";
 import { LESSON_STATUS_LABELS as STATUS_LABELS } from "@/src/lib/lessons/lessonStatus";
 
 const STATUS_STYLES: Record<number, string> = {
@@ -266,7 +268,7 @@ export default function LessonDetailClient({
       <div className="flex flex-col gap-6">
         <div>
           <Link
-            href={`/coach/students/${studentId}`}
+            href={`/coach/students/${studentId}/lessons`}
             className="inline-flex items-center gap-1.5 text-sm text-[#2B4257]/70 hover:text-[#2B4257] transition-colors"
           >
             <svg
@@ -283,7 +285,7 @@ export default function LessonDetailClient({
               <path d="M19 12H5" />
               <path d="m12 5-7 7 7 7" />
             </svg>
-            Back to Dashboard
+            Back to Lessons
           </Link>
         </div>
 
@@ -348,14 +350,20 @@ export default function LessonDetailClient({
               </p>
               <div className="flex flex-col gap-1">
                 {defaultPreTask?.file_url ? (
-                  <a
-                    href={defaultPreTask.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline"
+                  <Button
+                    asChild
+                    variant="link"
+                    className="h-auto gap-1 p-0 text-sm underline"
                   >
-                    View file
-                  </a>
+                    <a
+                      href={defaultPreTask.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View file
+                      <ExternalLinkIcon size={11} />
+                    </a>
+                  </Button>
                 ) : (
                   <span className="text-sm text-gray-400 italic">No file</span>
                 )}
@@ -382,14 +390,20 @@ export default function LessonDetailClient({
               {/* Current override file */}
               {currentOverridePre?.file_url && !clearPreFile && (
                 <div className="mb-2 flex items-center gap-2">
-                  <a
-                    href={currentOverridePre.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  <Button
+                    asChild
+                    variant="link"
+                    className="h-auto gap-1 p-0 text-sm underline"
                   >
-                    Current file
-                  </a>
+                    <a
+                      href={currentOverridePre.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Current file
+                      <ExternalLinkIcon size={11} />
+                    </a>
+                  </Button>
                   <button
                     type="button"
                     onClick={() => setClearPreFile(true)}
@@ -489,14 +503,20 @@ export default function LessonDetailClient({
               </p>
               <div className="flex flex-col gap-1">
                 {defaultPostTask?.file_url ? (
-                  <a
-                    href={defaultPostTask.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline"
+                  <Button
+                    asChild
+                    variant="link"
+                    className="h-auto gap-1 p-0 text-sm underline"
                   >
-                    View file
-                  </a>
+                    <a
+                      href={defaultPostTask.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View file
+                      <ExternalLinkIcon size={11} />
+                    </a>
+                  </Button>
                 ) : (
                   <span className="text-sm text-gray-400 italic">No file</span>
                 )}
@@ -522,14 +542,20 @@ export default function LessonDetailClient({
 
               {currentOverridePost?.file_url && !clearPostFile && (
                 <div className="mb-2 flex items-center gap-2">
-                  <a
-                    href={currentOverridePost.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:text-blue-800 underline"
+                  <Button
+                    asChild
+                    variant="link"
+                    className="h-auto gap-1 p-0 text-sm underline"
                   >
-                    Current file
-                  </a>
+                    <a
+                      href={currentOverridePost.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Current file
+                      <ExternalLinkIcon size={11} />
+                    </a>
+                  </Button>
                   <button
                     type="button"
                     onClick={() => setClearPostFile(true)}
@@ -683,29 +709,16 @@ function ResourceLink({ label, href }: { label: string; href: string | null }) {
     <div>
       <p className="text-xs font-medium text-gray-400 mb-1">{label}</p>
       {href ? (
-        <a
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline font-medium"
+        <Button
+          asChild
+          variant="link"
+          className="h-auto gap-1 p-0 text-sm font-medium underline"
         >
-          View
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="11"
-            height="11"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-            <polyline points="15 3 21 3 21 9" />
-            <line x1="10" y1="14" x2="21" y2="3" />
-          </svg>
-        </a>
+          <a href={href} target="_blank" rel="noopener noreferrer">
+            View
+            <ExternalLinkIcon size={11} />
+          </a>
+        </Button>
       ) : (
         <span className="text-sm text-gray-400 italic">None</span>
       )}
