@@ -3,7 +3,7 @@ import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/src/services/supabase/types/database";
 import { stripe } from "@/src/services/stripe/client";
-import { buildSubscriptionResponse } from "@/src/lib/payments/server/buildSubscriptionResponse";
+import { buildSubscriptionResponse } from "@/src/lib/payments/server/checkout/buildSubscriptionResponse";
 
 type StartAuthedCheckoutResult = Awaited<
   ReturnType<typeof buildSubscriptionResponse>

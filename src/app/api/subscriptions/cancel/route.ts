@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/src/lib/auth/server/requireRole";
 import { resolveStudentIdForBilling } from "@/src/lib/payments/server/resolveStudentIdForBilling";
-import { cancelSubscription } from "@/src/lib/payments/server/cancelSubscription";
+import { cancelSubscription } from "@/src/lib/payments/server/plan-changes/cancelSubscription";
 
 const BodySchema = z
   .object({

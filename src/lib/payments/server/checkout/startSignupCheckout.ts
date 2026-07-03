@@ -1,7 +1,7 @@
 import "server-only";
 
 import { stripe } from "@/src/services/stripe/client";
-import { buildSubscriptionResponse } from "@/src/lib/payments/server/buildSubscriptionResponse";
+import { buildSubscriptionResponse } from "@/src/lib/payments/server/checkout/buildSubscriptionResponse";
 
 type StartSignupCheckoutResult = Awaited<
   ReturnType<typeof buildSubscriptionResponse>

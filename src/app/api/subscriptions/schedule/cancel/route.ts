@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/src/lib/auth/server/requireRole";
 import { resolveStudentIdForBilling } from "@/src/lib/payments/server/resolveStudentIdForBilling";
-import { cancelScheduledSubscriptionChange } from "@/src/lib/payments/server/cancelScheduledSubscriptionChange";
+import { cancelScheduledSubscriptionChange } from "@/src/lib/payments/server/plan-changes/cancelScheduledSubscriptionChange";
 
 const BodySchema = z.object({ studentId: z.string().uuid() }).strict();
 

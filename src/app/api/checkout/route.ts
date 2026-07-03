@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/src/lib/auth/server/requireRole";
 import { assertOwnsStudent } from "@/src/lib/auth/server/ownership";
-import { startAuthedCheckout } from "@/src/lib/payments/server/startAuthedCheckout";
-import { startSignupCheckout } from "@/src/lib/payments/server/startSignupCheckout";
+import { startAuthedCheckout } from "@/src/lib/payments/server/checkout/startAuthedCheckout";
+import { startSignupCheckout } from "@/src/lib/payments/server/checkout/startSignupCheckout";
 
 /**
  * POST /api/checkout
