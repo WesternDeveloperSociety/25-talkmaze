@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { stripe } from "@/src/services/stripe/client";
 import { requireRole } from "@/src/lib/auth/server/requireRole";
 import { resolveStudentIdForBilling } from "@/src/lib/payments/server/resolveStudentIdForBilling";
+import { cancelScheduledSubscriptionChange } from "@/src/lib/payments/server/cancelScheduledSubscriptionChange";
 
 const BodySchema = z.object({ studentId: z.string().uuid() }).strict();
 
@@ -41,48 +41,19 @@ export async function POST(req: Request) {
       { status: studentResolution.status },
     );
   }
-  const studentId = studentResolution.studentId;
 
   // Stage 4: EXECUTE
   try {
-    const { data: subscription } = await supabase
-      .from("student_subscriptions")
-      .select("id, pending_stripe_schedule_id")
-      .eq("student_id", studentId)
-      .eq("status", "active")
-      .order("current_period_end", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (!subscription?.pending_stripe_schedule_id) {
+    const result = await cancelScheduledSubscriptionChange(supabase, {
+      accountId: user.id,
+      studentId: studentResolution.studentId,
+    });
+    if (!result.ok) {
       return NextResponse.json(
-        { error: "No pending plan change found" },
-        { status: 404 },
+        { error: result.error },
+        { status: result.status },
       );
     }
-
-    try {
-      await stripe.subscriptionSchedules.release(
-        subscription.pending_stripe_schedule_id,
-      );
-    } catch (releaseError) {
-      console.error("schedule-cancel: schedule release failed", releaseError);
-    }
-
-    const { error: updateError } = await supabase
-      .from("student_subscriptions")
-      .update({
-        pending_plan_id: null,
-        pending_effective_date: null,
-        pending_stripe_schedule_id: null,
-        pending_created_at: null,
-      })
-      .eq("id", subscription.id);
-
-    if (updateError) {
-      console.error("schedule-cancel: update error", updateError);
-    }
-
     return NextResponse.json({ success: true });
   } catch (err: unknown) {
     console.error("schedule-cancel error", err);
