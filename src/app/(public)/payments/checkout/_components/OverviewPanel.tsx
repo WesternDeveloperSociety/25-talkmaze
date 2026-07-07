@@ -1,4 +1,5 @@
 import { Card } from "@/src/components/ui/card";
+import { BillingHistory } from "./BillingHistory";
 
 export function OverviewPanel({
   planName,
@@ -40,12 +41,7 @@ export function OverviewPanel({
         </div>
       </div>
 
-      <div className="mt-auto flex justify-between items-center bg-white rounded-lg p-[15px] text-black text-base font-semibold">
-        <span>
-          Billing History{" "}
-          <span className="font-normal text-[#666] text-xs">expand</span>
-        </span>
-      </div>
+      <BillingHistory className="mt-auto" />
     </Card>
   );
 }

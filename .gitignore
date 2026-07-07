@@ -42,6 +42,7 @@ next-env.d.ts
 
 #mcp
 .context
+.vscode
 .vscode/mcp.json
 *.mcp.json
 .mcp.json

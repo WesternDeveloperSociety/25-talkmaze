@@ -41,7 +41,7 @@ vi.mock("@/src/services/stripe/client", () => ({
     subscriptionSchedules: { release: vi.fn().mockResolvedValue({}) },
     subscriptions: { list: vi.fn().mockResolvedValue({ data: [] }), retrieve: vi.fn(), update: vi.fn(), create: vi.fn() },
     refunds: { create: vi.fn() },
-    invoices: { retrieve: vi.fn() },
+    invoices: { retrieve: vi.fn(), list: vi.fn().mockResolvedValue({ data: [], has_more: false }) },
     customers: { create: vi.fn(), retrieve: vi.fn() },
     setupIntents: { create: vi.fn() },
   },
@@ -113,6 +113,7 @@ import { POST as subCancelPOST } from "@/src/app/api/subscriptions/cancel/route"
 import { POST as subResumePOST } from "@/src/app/api/subscriptions/resume/route";
 import { POST as subSchedulePOST } from "@/src/app/api/subscriptions/schedule/route";
 import { POST as subScheduleCancelPOST } from "@/src/app/api/subscriptions/schedule/cancel/route";
+import { GET as subInvoicesGET } from "@/src/app/api/subscriptions/invoices/route";
 
 // Attendance
 import { GET as attendanceGET, POST as attendancePOST, DELETE as attendanceDELETE } from "@/src/app/api/attendance/route";
@@ -209,6 +210,7 @@ const AUTH_CASES: AuthCase[] = [
   { name: "POST /api/subscriptions/resume", call: (c) => call(subResumePOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID } }), allowed: [1] },
   { name: "POST /api/subscriptions/schedule", call: (c) => call(subSchedulePOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID, priceId: "price_test" } }), allowed: [1] },
   { name: "POST /api/subscriptions/schedule/cancel", call: (c) => call(subScheduleCancelPOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID } }), allowed: [1] },
+  { name: "GET /api/subscriptions/invoices", call: (c) => call(subInvoicesGET, { cookies: c }), allowed: [1] },
 
   // ─── Attendance (mixed) ────────────────────────────────────────────────────
   { name: "GET /api/attendance", call: (c) => call(attendanceGET, { cookies: c, query: { student_id: FAKE_ID } }), allowed: [] },

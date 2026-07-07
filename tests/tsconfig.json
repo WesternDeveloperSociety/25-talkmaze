@@ -1,0 +1,20 @@
+{
+  // Editor-only project for the test suite.
+  //
+  // The root tsconfig.json excludes `tests/` (so `next build` never type-checks
+  // tests), which means the editor loses the `@/*` and `@tests/*` path aliases
+  // when you open a test file — every aliased import shows a false
+  // "Cannot find module" error. This config restores those aliases (rebased to
+  // this folder) so the editor resolves imports the same way vitest does at
+  // runtime. It changes nothing about the build or how tests run.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "@/*": ["../*"],
+      "@tests/*": ["./*"]
+    }
+  },
+  "include": ["**/*.ts"],
+  "exclude": []
+}

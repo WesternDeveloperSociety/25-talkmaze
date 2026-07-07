@@ -74,7 +74,16 @@ status code is a bug.
 | `404` | The resource referenced in the URL or body does not exist | `GET /api/parent/students/[invalid-uuid]` |
 | `409` | Conflict with current state — caller's request is well-formed but state forbids it | Student already has an active subscription |
 | `422` | Request is well-formed, caller is authorized, but business logic can't complete | Refund requested but no refundable payment found on the invoice |
+| `429` | Upstream rate-limited us (retryable) | Stripe returned a rate-limit error. Emitted only by `GET /api/subscriptions/invoices` |
 | `500` | Unexpected error — supabase, Stripe, or an unhandled exception | Database connection failed |
+| `503` | A dependency is temporarily unavailable (retryable) — send `Retry-After` | Stripe connection error or Stripe-side 5xx. Emitted only by `GET /api/subscriptions/invoices` |
+| `504` | Upstream did not respond in time (retryable) — send `Retry-After` | Stripe request timed out. Emitted only by `GET /api/subscriptions/invoices` |
+
+`429`/`503`/`504` are **scoped to `GET /api/subscriptions/invoices`** today — it differentiates upstream
+(Stripe) failures so an idempotent GET can be safely retried with backoff (see
+`src/lib/payments/server/stripeErrorStatus.ts`). Every other route still returns a blanket `500` for any
+unexpected error, including Stripe failures. Don't broaden this without updating this table + the route docs +
+contract tests first.
 
 ### Common pitfalls
 
