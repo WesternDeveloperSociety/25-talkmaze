@@ -91,7 +91,7 @@ Business workflows live here and call into `src/services/*`. Don't reverse the d
 - **UI styling:** Tailwind v4 CSS-only config (`@import "tailwindcss"` in `globals.css`). Colours use a two-tier token system — Tier-1 raw brand palette (`--talkmaze-*`) → Tier-2 semantic shadcn tokens (`--primary`, `--accent`, `--card`, …). Font is **Roboto** via `next/font` (the `next/image` allowlist in `next.config.ts` covers the Supabase storage host only).
 - **Components/UI:** shadcn (Radix) primitives in `src/components/ui/` built with `cva` + `cn` (`@/src/utils/cn`). Architecture, variant rules (orthogonal axes), tokens, atomic-design placement, and the shadcn workflow are canonical in **`docs/component-architecture.md` — read it before adding a component, variant, or colour.**
 - **Loading:** `loading.tsx` files return `<PageSpinner />`; no skeleton pattern.
-- **Calendars:** FullCalendar (dayGrid + timeGrid + interaction). Wrappers force remount with `key={`${initialView}-${initialDate}`}` to work around plugin state issues.
+- **Calendars:** FullCalendar (dayGrid + timeGrid + interaction) wrapped once in `src/components/common/calendar/ScheduleCalendar.tsx` (cva variants `variant: dark|light`, `toolbar: default|compact`; explicit `height` required — page layout owns sizing). Styles in `src/styles/calendar/` (structure vs per-theme color files). The wrapper forces remount with `key={`${initialView}-${initialDate}`}` to work around plugin state issues.
 - **Icons:** Local SVGs barreled from `src/components/ui/icons/index.ts`. `lucide-react` is also available and used sparingly.
 
 ### API contract (read this before editing any route)

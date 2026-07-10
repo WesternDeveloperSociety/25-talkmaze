@@ -1,6 +1,14 @@
-import AdminCalendar from "../../_components/AdminCalendar";
-import type { PendingBookingForm } from "@/src/lib/scheduling/types";
-import type { Coach, PendingBookingPreview } from "../../_types";
+import ScheduleCalendar from "@/src/components/common/calendar/ScheduleCalendar";
+import CalendarLegend from "@/src/components/common/calendar/CalendarLegend";
+import { eventPropsForKind } from "@/src/components/common/calendar/eventKinds";
+import type {
+  PendingBookingForm,
+  PendingBookingPreviewPayload,
+} from "@/src/lib/scheduling/types";
+import type { Coach } from "../../_types";
+
+/* Edit form + legend + page padding above the calendar eat ~420px. */
+const CALENDAR_HEIGHT = "calc(100vh - 420px)";
 
 const WEEKDAYS = [
   "Sunday",
@@ -18,7 +26,7 @@ const selectClass =
 interface PendingBookingDetailProps {
   form: PendingBookingForm;
   employees: Coach[];
-  preview: PendingBookingPreview | null;
+  preview: PendingBookingPreviewPayload | null;
   previewLoading: boolean;
   previewError: string;
   isEditing: boolean;
@@ -233,52 +241,32 @@ export default function PendingBookingDetail({
         </div>
       </div>
 
-      {/* Calendar event legend */}
-      <div className="flex flex-wrap items-center gap-4 px-1">
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-[#1e4535] border border-[#65CFAD]" />
-          <span className="text-white/40 text-xs">Coach only</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-[#315F9E] border border-[#8DBDFF]" />
-          <span className="text-white/40 text-xs">Student only</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-[#2F8F83] border border-[#8CF0DF]" />
-          <span className="text-white/40 text-xs">Both available</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-[#B1E7D6]" />
-          <span className="text-white/40 text-xs">Existing</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-[#294b63]/60" />
-          <span className="text-white/40 text-xs">Recurring block</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-[#F2C14E]" />
-          <span className="text-white/40 text-xs">Proposed</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-[#B94A48]" />
-          <span className="text-white/40 text-xs">Conflict</span>
-        </div>
-      </div>
+      {/* Calendar event legend — same kind classes as the events, can't drift */}
+      <CalendarLegend
+        items={[
+          { kind: "availability-coach", label: "Coach only" },
+          { kind: "availability-student", label: "Student only" },
+          { kind: "availability-both" },
+          { kind: "session", label: "Existing" },
+          { kind: "recurring-block" },
+          { kind: "proposed" },
+          { kind: "conflict" },
+        ]}
+      />
 
       {/* Calendar preview — scrolls to the first proposed/conflict date via initialCalendarDate */}
       <div className="bg-[#1F2E3B] rounded-2xl p-4 border border-white/5">
-        <AdminCalendar
-          events={[
-            ...(preview?.availabilityEvents ?? []),
-            ...(preview?.activeBookedEvents ?? []),
-            ...(preview?.existingSessionEvents ?? []),
-            ...(preview?.proposedEvents ?? []),
-            ...(preview?.conflictEvents ?? []),
-          ]}
+        <ScheduleCalendar
+          events={
+            preview?.events.map((e) => ({
+              ...e,
+              ...eventPropsForKind(e.kind),
+            })) ?? []
+          }
           initialView="timeGridWeek"
           initialDate={initialCalendarDate}
           loading={previewLoading}
-          offsetPx={420}
+          height={CALENDAR_HEIGHT}
         />
       </div>
     </div>

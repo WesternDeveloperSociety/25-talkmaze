@@ -4,8 +4,9 @@ import { useEffect, useState, useMemo } from "react";
 import type {
   PendingBooking,
   PendingBookingForm,
+  PendingBookingPreviewPayload,
 } from "@/src/lib/scheduling/types";
-import type { Coach, PendingBookingPreview } from "../../_types";
+import type { Coach } from "../../_types";
 
 // Exported so page.tsx can pass the same value to <Pagination>
 export const ITEMS_PER_PAGE = 6;
@@ -61,7 +62,7 @@ export function usePendingBookings() {
     string | null
   >(null);
   const [pendingPreview, setPendingPreview] =
-    useState<PendingBookingPreview | null>(null);
+    useState<PendingBookingPreviewPayload | null>(null);
   const [pendingPreviewLoading, setPendingPreviewLoading] = useState(false);
   const [pendingPreviewError, setPendingPreviewError] = useState("");
   const [employees, setEmployees] = useState<Coach[]>([]);
@@ -124,11 +125,9 @@ export function usePendingBookings() {
 
   // The earliest proposed or conflicting session date
   const pendingPreviewInitialDate = useMemo(() => {
-    const datedEvents = [
-      ...(pendingPreview?.proposedEvents ?? []),
-      ...(pendingPreview?.conflictEvents ?? []),
-    ]
-      .map((event) => (typeof event.start === "string" ? event.start : null))
+    const datedEvents = (pendingPreview?.events ?? [])
+      .filter((e) => e.kind === "proposed" || e.kind === "conflict")
+      .map((e) => ("start" in e ? e.start : null))
       .filter((start): start is string => !!start)
       .sort();
     return datedEvents[0];

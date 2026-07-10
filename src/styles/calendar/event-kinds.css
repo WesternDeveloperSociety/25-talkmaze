@@ -1,0 +1,64 @@
+/* ==== Event kinds ====
+   One block per CalendarEventKind (src/lib/scheduling/types.ts). Each sets
+   FullCalendar's own per-event vars, scoped to the kind class that
+   eventPropsForKind() puts on the event - and that CalendarLegend puts on
+   its swatches, so both always render the same colors.
+
+   Brand colors reference --talkmaze-* tokens; the --cal-* vars below are
+   scheduling-only shades with no app-wide role (deliberately NOT Tier-1). */
+:root {
+  --cal-availability-coach-bg: #1e4535;
+  --cal-availability-student-bg: #315f9e;
+  --cal-availability-student-border: #8dbdff;
+  --cal-availability-student-fg: #f4f8ff;
+  --cal-availability-both-bg: #2f8f83;
+  --cal-availability-both-border: #8cf0df;
+  --cal-availability-both-fg: #f2fffc;
+  --cal-recurring-block-bg: rgba(41, 75, 99, 0.38);
+  --cal-proposed-border: #f8e1a1;
+  --cal-conflict-bg: #b94a48;
+  --cal-conflict-border: #f2b8b5;
+}
+
+.tm-cal-event--session {
+  --fc-event-bg-color: var(--talkmaze-green-light);
+  --fc-event-border-color: transparent;
+  --fc-event-text-color: var(--talkmaze-dark-navy);
+}
+.tm-cal-event--session-pending-reschedule {
+  --fc-event-bg-color: var(--talkmaze-gold);
+  --fc-event-border-color: transparent;
+  --fc-event-text-color: var(--talkmaze-dark-navy);
+}
+.tm-cal-event--availability-coach {
+  --fc-event-bg-color: var(--cal-availability-coach-bg);
+  --fc-event-border-color: var(--talkmaze-mint);
+  --fc-event-text-color: var(--talkmaze-mint);
+}
+.tm-cal-event--availability-student {
+  --fc-event-bg-color: var(--cal-availability-student-bg);
+  --fc-event-border-color: var(--cal-availability-student-border);
+  --fc-event-text-color: var(--cal-availability-student-fg);
+}
+.tm-cal-event--availability-both {
+  --fc-event-bg-color: var(--cal-availability-both-bg);
+  --fc-event-border-color: var(--cal-availability-both-border);
+  --fc-event-text-color: var(--cal-availability-both-fg);
+}
+/* Renders as display:"background" shading; --fc-event-bg-color is still set
+   so the legend swatch shows the same color. */
+.tm-cal-event--recurring-block {
+  --fc-bg-event-color: var(--cal-recurring-block-bg);
+  --fc-event-bg-color: var(--cal-recurring-block-bg);
+  --fc-event-border-color: transparent;
+}
+.tm-cal-event--proposed {
+  --fc-event-bg-color: var(--talkmaze-gold);
+  --fc-event-border-color: var(--cal-proposed-border);
+  --fc-event-text-color: var(--talkmaze-dark-navy);
+}
+.tm-cal-event--conflict {
+  --fc-event-bg-color: var(--cal-conflict-bg);
+  --fc-event-border-color: var(--cal-conflict-border);
+  --fc-event-text-color: #ffffff;
+}

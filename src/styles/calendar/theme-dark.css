@@ -1,0 +1,85 @@
+/* ==== Dark calendar theme (default) ====
+   Color-only overrides for .tm-calendar--dark; structure lives in
+   structure.css. Brand colors reference --talkmaze-* tokens (globals.css);
+   the remaining literals are FullCalendar chrome shades (hovers, hairlines)
+   with no app-wide role. rgba() values that derive from a token carry a
+   comment naming it — CSS can't compose alpha onto a var without color-mix. */
+.tm-calendar--dark .fc {
+  --fc-border-color: rgba(255, 255, 255, 0.08);
+  --fc-button-bg-color: var(--talkmaze-turquoise);
+  --fc-button-border-color: rgba(255, 255, 255, 0.12);
+  --fc-button-hover-bg-color: #3a5570; /* turquoise, lightened for hover */
+  --fc-button-hover-border-color: rgba(255, 255, 255, 0.2);
+  --fc-button-active-bg-color: var(--talkmaze-green-light);
+  --fc-button-active-border-color: var(--talkmaze-green-light);
+  --fc-today-bg-color: rgba(177, 231, 214, 0.08); /* green-light @ 8% */
+  --fc-neutral-bg-color: transparent;
+  --fc-page-bg-color: transparent;
+  --fc-event-border-color: transparent;
+  --fc-highlight-color: rgba(177, 231, 214, 0.1); /* green-light @ 10% */
+  --fc-now-indicator-color: var(--talkmaze-green-light);
+  --fc-more-link-bg-color: var(--talkmaze-turquoise);
+  --fc-more-link-text-color: var(--talkmaze-green-light);
+  --fc-non-business-color: rgba(0, 0, 0, 0.15);
+}
+.tm-calendar--dark .fc-toolbar-title {
+  color: #fff !important;
+}
+.tm-calendar--dark .fc-button {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+.tm-calendar--dark .fc-button:hover {
+  color: #fff !important;
+}
+.tm-calendar--dark .fc-button-active,
+.tm-calendar--dark .fc-button-active:hover {
+  color: var(--talkmaze-dark-navy) !important;
+}
+.tm-calendar--dark .fc-col-header-cell {
+  background: var(--talkmaze-turquoise) !important;
+}
+.tm-calendar--dark .fc-col-header-cell-cushion {
+  color: rgba(177, 231, 214, 0.6) !important; /* green-light @ 60% */
+}
+.tm-calendar--dark .fc-daygrid-day-number {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+.tm-calendar--dark .fc-day-today .fc-daygrid-day-number {
+  color: var(--talkmaze-green-light) !important;
+}
+.tm-calendar--dark .fc-scrollgrid,
+.tm-calendar--dark .fc-scrollgrid td,
+.tm-calendar--dark .fc-scrollgrid th {
+  border-color: rgba(255, 255, 255, 0.07) !important;
+}
+.tm-calendar--dark .fc-timegrid-slot-label-cushion {
+  color: rgba(255, 255, 255, 0.28) !important;
+}
+.tm-calendar--dark .fc-timegrid-col.fc-day-today {
+  background: rgba(177, 231, 214, 0.04) !important; /* green-light @ 4% */
+}
+.tm-calendar--dark .fc-daygrid-more-link {
+  color: var(--talkmaze-green-light) !important;
+  background: rgba(43, 66, 87, 0.78); /* turquoise @ 78% */
+}
+.tm-calendar--dark .fc-daygrid-more-link:hover {
+  color: #dcfff4 !important; /* green-light, brightened for hover */
+  background: rgba(58, 85, 112, 0.92); /* hover turquoise @ 92% */
+}
+.tm-calendar--dark .fc-daygrid-event-dot {
+  border-color: var(--talkmaze-green-light) !important;
+}
+.tm-calendar--dark .fc-list-day-cushion {
+  background: var(--talkmaze-turquoise) !important;
+}
+.tm-calendar--dark .fc-list-day-text,
+.tm-calendar--dark .fc-list-day-side-text {
+  color: rgba(177, 231, 214, 0.7) !important; /* green-light @ 70% */
+}
+.tm-calendar--dark .fc-timegrid-now-indicator-line {
+  border-color: var(--talkmaze-green-light) !important;
+}
+.tm-calendar--dark .fc-timegrid-now-indicator-arrow {
+  border-top-color: var(--talkmaze-green-light) !important;
+  border-bottom-color: var(--talkmaze-green-light) !important;
+}

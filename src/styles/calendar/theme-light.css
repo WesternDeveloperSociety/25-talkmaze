@@ -1,0 +1,83 @@
+/* ==== Light calendar theme (white-first surface) ====
+   Color-only overrides for .tm-calendar--light; structure lives in
+   structure.css. Brand colors reference --talkmaze-* tokens (globals.css);
+   the pale literals are light-surface chrome shades with no app-wide role. */
+.tm-calendar--light .fc {
+  --fc-border-color: #c8d7d2;
+  --fc-button-bg-color: #ffffff;
+  --fc-button-border-color: #c8d7d2;
+  --fc-button-hover-bg-color: #f2f8f6;
+  --fc-button-hover-border-color: #b7cbc4;
+  --fc-button-active-bg-color: var(--talkmaze-mint);
+  --fc-button-active-border-color: var(--talkmaze-mint);
+  --fc-today-bg-color: rgba(101, 207, 173, 0.14); /* mint @ 14% */
+  --fc-neutral-bg-color: #f6fbf9;
+  --fc-page-bg-color: #ffffff;
+  --fc-event-border-color: transparent;
+  --fc-highlight-color: rgba(101, 207, 173, 0.16); /* mint @ 16% */
+  --fc-now-indicator-color: var(--talkmaze-mint);
+  --fc-more-link-bg-color: #e6f3ee;
+  --fc-more-link-text-color: var(--talkmaze-turquoise);
+  --fc-non-business-color: rgba(43, 66, 87, 0.05); /* turquoise @ 5% */
+}
+.tm-calendar--light .fc-toolbar-title {
+  color: var(--talkmaze-dark-navy) !important;
+}
+.tm-calendar--light .fc-button {
+  color: var(--talkmaze-turquoise) !important;
+}
+.tm-calendar--light .fc-button:hover {
+  color: var(--talkmaze-dark-navy) !important;
+}
+.tm-calendar--light .fc-button-active,
+.tm-calendar--light .fc-button-active:hover {
+  color: #ffffff !important;
+}
+.tm-calendar--light .fc-col-header-cell {
+  background: #f1f8f5 !important;
+}
+.tm-calendar--light .fc-col-header-cell-cushion {
+  color: rgba(31, 46, 59, 0.68) !important; /* dark-navy @ 68% */
+}
+.tm-calendar--light .fc-daygrid-day-number {
+  color: rgba(43, 66, 87, 0.68) !important; /* turquoise @ 68% */
+}
+.tm-calendar--light .fc-day-today .fc-daygrid-day-number {
+  color: var(--talkmaze-dark-navy) !important;
+}
+.tm-calendar--light .fc-scrollgrid,
+.tm-calendar--light .fc-scrollgrid td,
+.tm-calendar--light .fc-scrollgrid th {
+  border-color: #c8d7d2 !important;
+}
+.tm-calendar--light .fc-timegrid-slot-label-cushion {
+  color: rgba(31, 46, 59, 0.56) !important; /* dark-navy @ 56% */
+}
+.tm-calendar--light .fc-timegrid-col.fc-day-today {
+  background: rgba(101, 207, 173, 0.08) !important; /* mint @ 8% */
+}
+.tm-calendar--light .fc-daygrid-more-link {
+  color: var(--talkmaze-turquoise) !important;
+  background: rgba(101, 207, 173, 0.22); /* mint @ 22% */
+}
+.tm-calendar--light .fc-daygrid-more-link:hover {
+  color: var(--talkmaze-dark-navy) !important;
+  background: rgba(101, 207, 173, 0.34); /* mint @ 34% */
+}
+.tm-calendar--light .fc-daygrid-event-dot {
+  border-color: var(--talkmaze-turquoise) !important;
+}
+.tm-calendar--light .fc-list-day-cushion {
+  background: #edf7f3 !important;
+}
+.tm-calendar--light .fc-list-day-text,
+.tm-calendar--light .fc-list-day-side-text {
+  color: rgba(31, 46, 59, 0.68) !important; /* dark-navy @ 68% */
+}
+.tm-calendar--light .fc-timegrid-now-indicator-line {
+  border-color: var(--talkmaze-mint) !important;
+}
+.tm-calendar--light .fc-timegrid-now-indicator-arrow {
+  border-top-color: var(--talkmaze-mint) !important;
+  border-bottom-color: var(--talkmaze-mint) !important;
+}

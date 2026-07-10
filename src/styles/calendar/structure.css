@@ -1,0 +1,186 @@
+/* ==== Calendar structure (theme-free) ====
+   Layout, sizing, and typography shared by every ScheduleCalendar variant.
+   Colors live in theme-dark.css / theme-light.css / event-kinds.css. */
+
+/* FullCalendar zeroes border-top on all scrollgrid-section children. The liquid
+   body section (weeks 2+) therefore loses its top border, making the gap 
+   between week 1 and week 2 only 1px wide - invisible at low-opacity colors. Restore it. */
+.tm-calendar .fc-scrollgrid-section-liquid > td {
+  border-top-width: 1px !important;
+}
+
+.tm-calendar .fc-toolbar {
+  padding: 0.5rem 0;
+}
+.tm-calendar .fc-toolbar-title {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+}
+.tm-calendar .fc-button {
+  font-size: 0.65rem !important;
+  font-weight: 700 !important;
+  padding: 0.3rem 0.65rem !important;
+  border-radius: 0.5rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.tm-calendar .fc-col-header-cell {
+  padding: 0.5rem 0 !important;
+}
+.tm-calendar .fc-col-header-cell-cushion {
+  font-size: 0.6rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  text-decoration: none !important;
+}
+.tm-calendar .fc-daygrid-day-number {
+  font-size: 0.72rem !important;
+  padding: 4px 7px !important;
+  text-decoration: none !important;
+}
+.tm-calendar .fc-day-today .fc-daygrid-day-number {
+  font-weight: 700;
+}
+.tm-calendar .fc-timegrid-slot-label-cushion {
+  font-size: 0.62rem !important;
+}
+/* Event borders never render on the calendar; kinds still set
+   --fc-event-border-color because the legend swatches consume it. */
+.tm-calendar .fc-event {
+  border-radius: 6px !important;
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+  border: none !important;
+}
+.tm-calendar .fc-event-title {
+  font-weight: 600;
+}
+.tm-calendar .fc-daygrid-day-events {
+  margin-top: 2px !important;
+}
+.tm-calendar .fc-daygrid-event-harness {
+  margin-top: 1px !important;
+}
+.tm-calendar .fc-daygrid-more-link {
+  font-size: 0.62rem !important;
+  font-weight: 700 !important;
+  border-radius: 6px;
+  padding: 1px 6px !important;
+}
+.tm-calendar a {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+.tm-calendar .fc-list-day-text,
+.tm-calendar .fc-list-day-side-text {
+  font-size: 0.7rem !important;
+}
+.tm-calendar .fc-timegrid-slot {
+  height: 40px !important;
+}
+
+/* === Event content layout (renderEventContent in ScheduleCalendar.tsx) === */
+
+/* Month view: time + title share one truncating line. */
+.tm-cal-event-month {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+.tm-cal-event-month-time {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.tm-cal-event-month-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Week/day views: time stacked above a wrapping title. */
+.tm-cal-event-column {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  padding: 1px 3px;
+  line-height: 1.2;
+}
+.tm-cal-event-column-time {
+  white-space: nowrap;
+  opacity: 0.9;
+}
+.tm-cal-event-column-title {
+  word-break: break-word;
+}
+
+/* ==== Compact toolbar variant ====
+   Keeps the toolbar compact and wrap-safe on narrower desktop widths. */
+.tm-calendar--compact-toolbar .fc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+.tm-calendar--compact-toolbar .fc-toolbar-chunk {
+  display: flex;
+  align-items: center;
+  gap: 0.22rem;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+.tm-calendar--compact-toolbar .fc-toolbar-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tm-calendar--compact-toolbar .fc-button {
+  font-size: 0.6rem !important;
+  padding: 0.24rem 0.45rem !important;
+  letter-spacing: 0.03em;
+}
+
+@media (max-width: 1279px) {
+  .tm-calendar--compact-toolbar .fc-toolbar {
+    flex-wrap: nowrap;
+  }
+  .tm-calendar--compact-toolbar .fc-toolbar-title {
+    font-size: 0.8rem !important;
+  }
+  .tm-calendar--compact-toolbar .fc-button {
+    font-size: 0.54rem !important;
+    padding: 0.2rem 0.35rem !important;
+  }
+  .tm-calendar--compact-toolbar .fc-toolbar-chunk {
+    gap: 0.18rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .tm-calendar--compact-toolbar .fc-toolbar-title {
+    font-size: 0.9rem !important;
+  }
+  .tm-calendar--compact-toolbar .fc-button {
+    font-size: 0.62rem !important;
+    padding: 0.26rem 0.5rem !important;
+  }
+}
+
+/* ==== Legend swatch ====
+   Reads the SAME per-kind CSS vars the calendar events use (set by the
+   .tm-cal-event--<kind> classes in event-kinds.css), so a legend can never
+   drift from the calendar. Unlike events, swatches do render their border. */
+.tm-cal-swatch {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 0.125rem;
+  background-color: var(--fc-event-bg-color);
+  border: 1px solid var(--fc-event-border-color);
+}

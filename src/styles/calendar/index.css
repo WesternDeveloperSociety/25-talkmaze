@@ -1,0 +1,11 @@
+/* Calendar styles for src/components/common/calendar/ScheduleCalendar.tsx.
+   Imported from src/app/globals.css.
+
+   structure.css   layout/sizing/typography shared by every variant (theme-free)
+   theme-dark.css  colors for the default dark surface (.tm-calendar--dark)
+   theme-light.css colors for the light surface (.tm-calendar--light)
+   event-kinds.css per-kind event colors (.tm-cal-event--<kind>) */
+@import "./structure.css";
+@import "./theme-dark.css";
+@import "./theme-light.css";
+@import "./event-kinds.css";

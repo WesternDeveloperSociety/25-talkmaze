@@ -1,5 +1,3 @@
-import type { EventInput } from "@fullcalendar/core";
-
 export type Student = {
   id: string;
   account_id: string;
@@ -28,19 +26,6 @@ export type Coach = {
   last_name: string;
   created_at: string;
   updated_at: string;
-};
-
-
-export type PendingBookingPreview = {
-  availabilityEvents: EventInput[];
-  existingSessionEvents: EventInput[];
-  activeBookedEvents: EventInput[];
-  proposedEvents: EventInput[];
-  conflictEvents: EventInput[];
-  conflicts: { start: string; end: string; reason: string }[];
-  canApprove: boolean;
-  generatedCount: number;
-  requestedCount: number;
 };
 
 export type Assignment = {

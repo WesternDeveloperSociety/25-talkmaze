@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { EventClickArg, EventInput } from "@fullcalendar/core";
-import AdminCalendar from "../../../../admin/_components/AdminCalendar";
+import ScheduleCalendar from "@/src/components/common/calendar/ScheduleCalendar";
+import { sessionEvent } from "@/src/components/common/calendar/eventKinds";
 import EditStudentAvailabilityModal from "./EditStudentAvailabilityModal";
 import SessionRescheduleModal from "./SessionRescheduleModal";
 import SchedulePanel from "./SchedulePanel";
@@ -41,17 +42,16 @@ export default function ParentScheduleClient({ students, sessions }: Props) {
 
   const calendarEvents = useMemo<EventInput[]>(
     () =>
-      filteredSessions.map((session) => ({
-        id: session.id,
-        title: session.coachName
-          ? `${session.studentName} · ${session.coachName}`
-          : session.studentName,
-        start: session.start_time,
-        end: session.end_time ?? undefined,
-        backgroundColor: "#B1E7D6",
-        borderColor: "transparent",
-        textColor: "#1F2E3B",
-      })),
+      filteredSessions.map((session) =>
+        sessionEvent({
+          id: session.id,
+          title: session.coachName
+            ? `${session.studentName} · ${session.coachName}`
+            : session.studentName,
+          start: session.start_time,
+          end: session.end_time,
+        }),
+      ),
     [filteredSessions],
   );
 
@@ -86,10 +86,11 @@ export default function ParentScheduleClient({ students, sessions }: Props) {
           {/* Calendar */}
           <section className="min-h-0 min-w-0 flex flex-col items-center lg:self-center">
             <div className="w-full max-w-[800px] bg-white rounded-[20px] p-3 lg:p-4 border border-[#DCE8E5] shadow-[0_8px_20px_rgba(31,46,59,0.08)] overflow-x-auto">
-              <AdminCalendar
+              <ScheduleCalendar
                 events={calendarEvents}
                 initialView="dayGridMonth"
-                theme="light"
+                variant="light"
+                toolbar="compact"
                 height={CALENDAR_HEIGHT}
                 onEventClick={handleEventClick}
                 dayMaxEventRows
@@ -100,7 +101,6 @@ export default function ParentScheduleClient({ students, sessions }: Props) {
                   center: "title",
                   right: "dayGridMonth,timeGridWeek,timeGridDay",
                 }}
-                className="parent-sessions-calendar"
               />
             </div>
           </section>
@@ -119,7 +119,11 @@ export default function ParentScheduleClient({ students, sessions }: Props) {
               />
             </div>
 
-            <Button variant="default" size="md" onClick={() => setShowAvailability(true)}>
+            <Button
+              variant="default"
+              size="md"
+              onClick={() => setShowAvailability(true)}
+            >
               Edit Student Availability
             </Button>
           </section>

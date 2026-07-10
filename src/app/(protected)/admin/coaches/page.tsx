@@ -2,13 +2,18 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/src/services/supabase/client";
 import type { EventInput } from "@fullcalendar/core";
 
 import CoachListItem from "./_components/CoachListItem";
 import { useDocumentTitle } from "@/src/hooks/useDocumentTitle";
 import EmptyDetail from "../_components/EmptyDetail";
-import AdminCalendar from "../_components/AdminCalendar";
+import ScheduleCalendar from "@/src/components/common/calendar/ScheduleCalendar";
+import CalendarLegend from "@/src/components/common/calendar/CalendarLegend";
+import {
+  eventPropsForKind,
+  sessionEvent,
+} from "@/src/components/common/calendar/eventKinds";
+import { fullName } from "@/src/utils/formatName";
 import Pagination from "@/src/components/common/Pagination";
 import EmployeeDetailModal from "./_components/EmployeeDetailModal";
 import CreateCoachModal from "./_components/CreateCoachModal";
@@ -16,6 +21,9 @@ import type { Coach } from "../_types";
 import { useAdminMobileDetail } from "../_context/AdminMobileDetailContext";
 
 const ITEMS_PER_PAGE = 15;
+
+/* Header + info cards + legend + padding above the calendar eat ~360px. */
+const CALENDAR_HEIGHT = "calc(100vh - 360px)";
 
 const inputClass =
   "w-full bg-[#1F2E3B] border border-white/8 text-white placeholder:text-white/25 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#B1E7D6]/40 transition-colors";
@@ -26,6 +34,21 @@ function parseAvailabilityTime(val: string | null | undefined): string {
   if (val.length > 10) return val.slice(11, 16);
   return "";
 }
+
+type AvailabilityRow = {
+  weekday: number | null;
+  start_time: string | null;
+  end_time: string | null;
+  start_time_new: string | null;
+  end_time_new: string | null;
+};
+
+type SessionRow = {
+  id: number;
+  start_time: string | null;
+  end_time: string | null;
+  students: { first_name: string | null; last_name: string | null } | null;
+};
 
 export default function CoachesPage() {
   useDocumentTitle("Coaches");
@@ -74,58 +97,71 @@ export default function CoachesPage() {
       setCoachEvents([]);
       return;
     }
+    const coachId = selectedEmployee.id;
     setCoachEventsLoading(true);
-    const supabase = createClient();
 
-    Promise.all([
-      supabase
-        .from("coach_availabilities")
-        .select("weekday, start_time, end_time, start_time_new, end_time_new")
-        .eq("coach_id", selectedEmployee.id),
-      supabase
-        .from("sessions")
-        .select(
-          "id, start_time, end_time, student_id, students(first_name, last_name)",
-        )
-        .eq("coach_id", selectedEmployee.id),
-    ]).then(([{ data: availability }, { data: sessions }]) => {
-      const availabilityEvents: EventInput[] = (availability ?? [])
-        .map((s) => {
-          const start = parseAvailabilityTime(s.start_time_new ?? s.start_time);
-          const end = parseAvailabilityTime(s.end_time_new ?? s.end_time);
-          if (!start || !end) return null;
-          return {
-            daysOfWeek: [s.weekday ?? 0],
-            startTime: start,
-            endTime: end,
-            title: `${start} – ${end}`,
-            backgroundColor: "#1e4535",
-            borderColor: "#65CFAD",
-            textColor: "#65CFAD",
-          };
-        })
-        .filter(Boolean) as EventInput[];
+    // Stale-response guard: rapid coach switching must not flash old events.
+    let cancelled = false;
+    async function loadCoachEvents() {
+      try {
+        const [availRes, sessRes] = await Promise.all([
+          fetch(`/api/admin/employees/${coachId}/availability`),
+          fetch(`/api/admin/employees/${coachId}/sessions`),
+        ]);
+        const availability: AvailabilityRow[] = availRes.ok
+          ? ((await availRes.json()).availability ?? [])
+          : [];
+        const sessions: SessionRow[] = sessRes.ok
+          ? ((await sessRes.json()).sessions ?? [])
+          : [];
+        if (cancelled) return;
 
-      const sessionEvents: EventInput[] = (sessions ?? []).map((s: any) => {
-        const student = s.students;
-        const name = student
-          ? `${student.first_name ?? ""} ${student.last_name ?? ""}`.trim() ||
-            "Session"
-          : "Session";
-        return {
-          id: String(s.id),
-          title: name,
-          start: s.start_time,
-          end: s.end_time ?? undefined,
-          backgroundColor: "#B1E7D6",
-          borderColor: "transparent",
-          textColor: "#1F2E3B",
-        };
-      });
+        const availabilityEvents: EventInput[] = availability
+          .map((s) => {
+            const start = parseAvailabilityTime(
+              s.start_time_new ?? s.start_time,
+            );
+            const end = parseAvailabilityTime(s.end_time_new ?? s.end_time);
+            if (!start || !end) return null;
+            return {
+              daysOfWeek: [s.weekday ?? 0],
+              startTime: start,
+              endTime: end,
+              title: `${start} – ${end}`,
+              ...eventPropsForKind("availability-coach"),
+            };
+          })
+          .filter(Boolean) as EventInput[];
 
-      setCoachEvents([...availabilityEvents, ...sessionEvents]);
-      setCoachEventsLoading(false);
-    });
+        const sessionEvents: EventInput[] = sessions
+          .filter((s) => s.start_time)
+          .map((s) =>
+            sessionEvent({
+              id: String(s.id),
+              title: fullName(
+                s.students?.first_name,
+                s.students?.last_name,
+                "Session",
+              ),
+              start: s.start_time!,
+              end: s.end_time,
+            }),
+          );
+
+        setCoachEvents([...availabilityEvents, ...sessionEvents]);
+      } catch {
+        // fetch() rejects on network errors; res.json() throws on non-JSON
+        // bodies (e.g. an auth redirect to /login). Fall back to empty.
+        if (!cancelled) setCoachEvents([]);
+      } finally {
+        if (!cancelled) setCoachEventsLoading(false);
+      }
+    }
+    loadCoachEvents();
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedEmployee?.id]);
 
   useEffect(() => {
@@ -271,23 +307,19 @@ export default function CoachesPage() {
               ))}
             </div>
 
-            <div className="flex items-center gap-4 px-1">
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm bg-[#1e4535] border border-[#65CFAD]" />
-                <span className="text-white/40 text-xs">Available</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-sm bg-[#B1E7D6]" />
-                <span className="text-white/40 text-xs">Booked</span>
-              </div>
-            </div>
+            <CalendarLegend
+              items={[
+                { kind: "availability-coach", label: "Available" },
+                { kind: "session", label: "Booked" },
+              ]}
+            />
 
             <div className="bg-[#1F2E3B] rounded-2xl p-4 border border-white/5">
-              <AdminCalendar
+              <ScheduleCalendar
                 events={coachEvents}
                 initialView="timeGridWeek"
                 loading={coachEventsLoading}
-                offsetPx={360}
+                height={CALENDAR_HEIGHT}
               />
             </div>
           </div>

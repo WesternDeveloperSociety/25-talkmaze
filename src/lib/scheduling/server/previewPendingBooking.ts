@@ -3,11 +3,15 @@ import type { Database } from "@/src/services/supabase/types/database";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezonePlugin from "dayjs/plugin/timezone";
+import type {
+  PendingBookingPreviewPayload,
+  PreviewCalendarEvent,
+} from "@/src/lib/scheduling/types";
 
 dayjs.extend(utc);
 dayjs.extend(timezonePlugin);
 
-// ─── Types ────────────────────────────────────────────────────────────────
+// === Types === //
 
 export type PreviewPendingBookingInput = {
   bookingId: string;
@@ -21,76 +25,10 @@ export type PreviewPendingBookingInput = {
 };
 
 export type PreviewPendingBookingResult =
-  | {
-      ok: true;
-      availabilityEvents: AvailabilityEvent[];
-      existingSessionEvents: ExistingSessionEvent[];
-      activeBookedEvents: ActiveBookedEvent[];
-      proposedEvents: ProposedEvent[];
-      conflictEvents: ConflictEvent[];
-      conflicts: Conflict[];
-      canApprove: boolean;
-      generatedCount: number;
-      requestedCount: number;
-    }
+  | ({ ok: true } & PendingBookingPreviewPayload)
   | { ok: false; status: number; error: string };
 
-type AvailabilityEvent = {
-  daysOfWeek: number[];
-  startTime: string;
-  endTime: string;
-  title: string;
-  backgroundColor: string;
-  borderColor: string;
-  textColor: string;
-};
-
-type ExistingSessionEvent = {
-  id: string;
-  title: string;
-  start: string | undefined;
-  end: string | undefined;
-  backgroundColor: string;
-  borderColor: string;
-  textColor: string;
-};
-
-type ActiveBookedEvent = {
-  id: string;
-  daysOfWeek: number[];
-  startTime: string;
-  endTime: string;
-  title: string;
-  display: string;
-  backgroundColor: string;
-  borderColor: string;
-};
-
-type ProposedEvent = {
-  id: string;
-  title: string;
-  start: string;
-  end: string;
-  backgroundColor: string;
-  borderColor: string;
-  textColor: string;
-};
-
-type ConflictEvent = {
-  id: string;
-  title: string;
-  start: string;
-  end: string;
-  backgroundColor: string;
-  borderColor: string;
-  textColor: string;
-};
-
-type Conflict = {
-  start: string;
-  end: string;
-  reason: string;
-};
+type Conflict = PendingBookingPreviewPayload["conflicts"][number];
 
 type AvailabilityInterval = {
   weekday: number;
@@ -98,7 +36,7 @@ type AvailabilityInterval = {
   end: number;
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────
+// === Helpers === //
 
 function normalizeTime(value: string) {
   return /^\d{2}:\d{2}$/.test(value) ? `${value}:00` : value;
@@ -136,7 +74,9 @@ function toAvailabilityIntervals(
 ) {
   return (rows ?? [])
     .map((slot) => {
-      const start = normalizeAvailabilityTime(slot.start_time_new ?? slot.start_time);
+      const start = normalizeAvailabilityTime(
+        slot.start_time_new ?? slot.start_time,
+      );
       const end = normalizeAvailabilityTime(slot.end_time_new ?? slot.end_time);
       if (slot.weekday == null || !start || !end) return null;
       return {
@@ -145,7 +85,9 @@ function toAvailabilityIntervals(
         end: timeStringToMinutes(end),
       };
     })
-    .filter((slot): slot is AvailabilityInterval => !!slot && slot.start < slot.end);
+    .filter(
+      (slot): slot is AvailabilityInterval => !!slot && slot.start < slot.end,
+    );
 }
 
 function intervalContains(
@@ -165,14 +107,20 @@ function intervalContains(
 function buildAvailabilityEvents(
   coachAvailability: AvailabilityInterval[],
   studentAvailability: AvailabilityInterval[],
-): AvailabilityEvent[] {
-  const events: AvailabilityEvent[] = [];
+): PreviewCalendarEvent[] {
+  const events: PreviewCalendarEvent[] = [];
 
   for (let weekday = 0; weekday <= 6; weekday++) {
-    const dayCoach = coachAvailability.filter((slot) => slot.weekday === weekday);
-    const dayStudent = studentAvailability.filter((slot) => slot.weekday === weekday);
+    const dayCoach = coachAvailability.filter(
+      (slot) => slot.weekday === weekday,
+    );
+    const dayStudent = studentAvailability.filter(
+      (slot) => slot.weekday === weekday,
+    );
     const boundaries = Array.from(
-      new Set([...dayCoach, ...dayStudent].flatMap((slot) => [slot.start, slot.end])),
+      new Set(
+        [...dayCoach, ...dayStudent].flatMap((slot) => [slot.start, slot.end]),
+      ),
     ).sort((a, b) => a - b);
 
     for (let i = 0; i < boundaries.length - 1; i++) {
@@ -186,25 +134,13 @@ function buildAvailabilityEvents(
 
       const variant =
         coachCan && studentCan
-          ? {
-              title: "Both available",
-              backgroundColor: "#2F8F83",
-              borderColor: "#8CF0DF",
-              textColor: "#F2FFFC",
-            }
+          ? { kind: "availability-both" as const, title: "Both available" }
           : studentCan
             ? {
+                kind: "availability-student" as const,
                 title: "Student available",
-                backgroundColor: "#315F9E",
-                borderColor: "#8DBDFF",
-                textColor: "#F4F8FF",
               }
-            : {
-                title: "Coach available",
-                backgroundColor: "#1e4535",
-                borderColor: "#65CFAD",
-                textColor: "#65CFAD",
-              };
+            : { kind: "availability-coach" as const, title: "Coach available" };
 
       events.push({
         daysOfWeek: [weekday],
@@ -233,7 +169,12 @@ function startDateForPreview(startDate: string | undefined, weekday: number) {
 }
 
 function recurringSlotRangeForOccurrence(
-  slot: { weekday: number; start_time: string; end_time: string; timezone: string },
+  slot: {
+    weekday: number;
+    start_time: string;
+    end_time: string;
+    timezone: string;
+  },
   occurrenceStartUTC: dayjs.Dayjs,
 ) {
   const slotDateLocal = occurrenceStartUTC.tz(slot.timezone).day(slot.weekday);
@@ -248,7 +189,7 @@ function recurringSlotRangeForOccurrence(
   return { startUTC: slotStartLocal.utc(), endUTC: slotEndLocal.utc() };
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────
+// === Main === //
 
 /**
  * Compute a "what-if" preview for approving a pending booked slot:
@@ -257,10 +198,6 @@ function recurringSlotRangeForOccurrence(
  *   - The coach's existing recurring booked slots.
  *   - The proposed session occurrences (up to numSessions × 3 weeks of search).
  *   - Any conflicts detected.
- *
- * Extracted from src/app/api/admin/pending-bookings/[id]/preview/route.ts
- * per api-contract.md §domain-logic-placement. The route now just
- * authenticates, validates, and delegates.
  */
 export async function previewPendingBooking(
   supabase: SupabaseClient<Database>,
@@ -270,9 +207,16 @@ export async function previewPendingBooking(
   const endTime = normalizeTime(input.endTime);
 
   if (startTime >= endTime) {
-    return { ok: false, status: 400, error: "Start time must be before end time" };
+    return {
+      ok: false,
+      status: 400,
+      error: "Start time must be before end time",
+    };
   }
-  if (input.startDate && new Date(`${input.startDate}T12:00:00Z`).getUTCDay() !== input.weekday) {
+  if (
+    input.startDate &&
+    new Date(`${input.startDate}T12:00:00Z`).getUTCDay() !== input.weekday
+  ) {
     return {
       ok: false,
       status: 400,
@@ -308,13 +252,17 @@ export async function previewPendingBooking(
       .eq("student_id", pendingSlot.student_id),
     supabase
       .from("sessions")
-      .select("id, start_time, end_time, student_id, students(first_name, last_name)")
+      .select(
+        "id, start_time, end_time, student_id, students(first_name, last_name)",
+      )
       .eq("coach_id", input.coachId),
     supabase
       .from("booked_slots")
       .select("*, students(first_name, last_name)")
       .eq("status", "active")
-      .or(`coach_id.eq.${input.coachId},student_id.eq.${pendingSlot.student_id}`),
+      .or(
+        `coach_id.eq.${input.coachId},student_id.eq.${pendingSlot.student_id}`,
+      ),
     supabase
       .from("students")
       .select("first_name, last_name")
@@ -327,35 +275,38 @@ export async function previewPendingBooking(
     toAvailabilityIntervals(studentAvailability ?? null),
   );
 
-  const existingSessionEvents: ExistingSessionEvent[] = (sessions ?? []).map(
-    (session: {
-      id: number | string;
-      start_time: string | null;
-      end_time: string | null;
-      students:
-        | { first_name: string | null; last_name: string | null }
-        | { first_name: string | null; last_name: string | null }[]
-        | null;
-    }) => {
-      const sessionStudent = Array.isArray(session.students)
-        ? session.students[0]
-        : session.students;
-      const studentName = sessionStudent
-        ? `${sessionStudent.first_name ?? ""} ${sessionStudent.last_name ?? ""}`.trim() || "Booked"
-        : "Booked";
-      return {
-        id: `existing-${session.id}`,
-        title: studentName,
-        start: session.start_time ?? undefined,
-        end: session.end_time ?? undefined,
-        backgroundColor: "#B1E7D6",
-        borderColor: "transparent",
-        textColor: "#1F2E3B",
-      };
-    },
-  );
+  const existingSessionEvents: PreviewCalendarEvent[] = (sessions ?? [])
+    .filter(
+      (session: { start_time: string | null }) => session.start_time != null,
+    )
+    .map(
+      (session: {
+        id: number | string;
+        start_time: string | null;
+        end_time: string | null;
+        students:
+          | { first_name: string | null; last_name: string | null }
+          | { first_name: string | null; last_name: string | null }[]
+          | null;
+      }) => {
+        const sessionStudent = Array.isArray(session.students)
+          ? session.students[0]
+          : session.students;
+        const studentName = sessionStudent
+          ? `${sessionStudent.first_name ?? ""} ${sessionStudent.last_name ?? ""}`.trim() ||
+            "Booked"
+          : "Booked";
+        return {
+          id: `existing-${session.id}`,
+          kind: "session" as const,
+          title: studentName,
+          start: session.start_time!,
+          end: session.end_time ?? undefined,
+        };
+      },
+    );
 
-  const activeBookedEvents: ActiveBookedEvent[] = (activeSlots ?? [])
+  const activeBookedEvents: PreviewCalendarEvent[] = (activeSlots ?? [])
     .filter((slot) => slot.coach_id === input.coachId)
     .map((slot) => {
       const slotStudent = Array.isArray(slot.students)
@@ -367,18 +318,17 @@ export async function previewPendingBooking(
         : "Recurring booked";
       return {
         id: `active-${slot.id}`,
+        kind: "recurring-block" as const,
+        title: studentLabel,
         daysOfWeek: [slot.weekday],
         startTime: slot.start_time.slice(0, 5),
         endTime: slot.end_time.slice(0, 5),
-        title: studentLabel,
-        display: "background",
-        backgroundColor: "rgba(41,75,99,0.38)",
-        borderColor: "transparent",
       };
     });
 
   const studentName = student
-    ? `${student.first_name ?? ""} ${student.last_name ?? ""}`.trim() || "Proposed"
+    ? `${student.first_name ?? ""} ${student.last_name ?? ""}`.trim() ||
+      "Proposed"
     : "Proposed";
   const durationMinutes = Math.max(
     1,
@@ -387,8 +337,8 @@ export async function previewPendingBooking(
   const anchorDate = startDateForPreview(input.startDate, input.weekday);
   const anchorStart = dayjs.tz(`${anchorDate}T${startTime}`, input.timezone);
 
-  const proposedEvents: ProposedEvent[] = [];
-  const conflictEvents: ConflictEvent[] = [];
+  const proposedEvents: PreviewCalendarEvent[] = [];
+  const conflictEvents: PreviewCalendarEvent[] = [];
   const conflicts: Conflict[] = [];
   let successfullyGenerated = 0;
   let weekOffset = 0;
@@ -396,7 +346,10 @@ export async function previewPendingBooking(
 
   while (successfullyGenerated < input.numSessions && weekOffset <= maxWeeks) {
     const targetDate = anchorStart.add(weekOffset, "week").format("YYYY-MM-DD");
-    const occurrenceStart = dayjs.tz(`${targetDate}T${startTime}`, input.timezone);
+    const occurrenceStart = dayjs.tz(
+      `${targetDate}T${startTime}`,
+      input.timezone,
+    );
     const occurrenceEnd = occurrenceStart.add(durationMinutes, "minute");
     const occurrenceStartUTC = occurrenceStart.utc();
     const occurrenceEndUTC = occurrenceEnd.utc();
@@ -424,12 +377,10 @@ export async function previewPendingBooking(
         : "Overlaps an active recurring booking";
       conflictEvents.push({
         id: `conflict-${weekOffset}`,
+        kind: "conflict",
         title: reason,
         start: occurrenceStartUTC.toISOString(),
         end: occurrenceEndUTC.toISOString(),
-        backgroundColor: "#B94A48",
-        borderColor: "#F2B8B5",
-        textColor: "#ffffff",
       });
       conflicts.push({
         start: occurrenceStartUTC.toISOString(),
@@ -439,12 +390,10 @@ export async function previewPendingBooking(
     } else {
       proposedEvents.push({
         id: `proposed-${weekOffset}`,
+        kind: "proposed",
         title: `Proposed: ${studentName}`,
         start: occurrenceStartUTC.toISOString(),
         end: occurrenceEndUTC.toISOString(),
-        backgroundColor: "#F2C14E",
-        borderColor: "#F8E1A1",
-        textColor: "#1F2E3B",
       });
       successfullyGenerated++;
     }
@@ -454,11 +403,13 @@ export async function previewPendingBooking(
 
   return {
     ok: true,
-    availabilityEvents,
-    existingSessionEvents,
-    activeBookedEvents,
-    proposedEvents,
-    conflictEvents,
+    events: [
+      ...availabilityEvents,
+      ...activeBookedEvents,
+      ...existingSessionEvents,
+      ...proposedEvents,
+      ...conflictEvents,
+    ],
     conflicts,
     canApprove: proposedEvents.length === input.numSessions,
     generatedCount: proposedEvents.length,

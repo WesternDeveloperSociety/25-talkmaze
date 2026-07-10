@@ -2,13 +2,14 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createClient } from "@/src/services/supabase/client";
 import type { EventInput } from "@fullcalendar/core";
 
 import StudentListItem from "./_components/StudentListItem";
 import { useDocumentTitle } from "@/src/hooks/useDocumentTitle";
 import EmptyDetail from "../_components/EmptyDetail";
-import AdminCalendar from "../_components/AdminCalendar";
+import ScheduleCalendar from "@/src/components/common/calendar/ScheduleCalendar";
+import { sessionEvent } from "@/src/components/common/calendar/eventKinds";
+import { fullName } from "@/src/utils/formatName";
 import Pagination from "@/src/components/common/Pagination";
 import StudentDetailModal from "./_components/StudentDetailModal";
 import type { Student } from "../_types";
@@ -16,8 +17,18 @@ import { useAdminMobileDetail } from "../_context/AdminMobileDetailContext";
 
 const ITEMS_PER_PAGE = 15;
 
+/* Header + info cards + padding above the calendar eat ~340px. */
+const CALENDAR_HEIGHT = "calc(100vh - 340px)";
+
 const inputClass =
   "w-full bg-[#1F2E3B] border border-white/8 text-white placeholder:text-white/25 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#B1E7D6]/40 transition-colors";
+
+type SessionRow = {
+  id: number;
+  start_time: string | null;
+  end_time: string | null;
+  coaches: { first_name: string | null; last_name: string | null } | null;
+};
 
 export default function StudentsPage() {
   useDocumentTitle("Students");
@@ -87,36 +98,47 @@ export default function StudentsPage() {
       setStudentEvents([]);
       return;
     }
+    const studentId = selectedStudent.id;
     setStudentEventsLoading(true);
-    const supabase = createClient();
-    supabase
-      .from("sessions")
-      .select("id, start_time, end_time, coaches(first_name, last_name)")
-      .eq("student_id", selectedStudent.id)
-      .order("start_time", { ascending: true })
-      .then(({ data, error }) => {
-        if (error) console.error("Student sessions fetch error:", error);
-        const events: EventInput[] = (data ?? [])
-          .filter((s: any) => s.start_time)
-          .map((s: any) => {
-            const coach = s.coaches;
-            const title = coach
-              ? `${coach.first_name ?? ""} ${coach.last_name ?? ""}`.trim() ||
-                "Session"
-              : "Session";
-            return {
+
+    // Stale-response guard: rapid student switching must not flash old events.
+    let cancelled = false;
+    async function loadStudentEvents() {
+      try {
+        const res = await fetch(`/api/admin/students/${studentId}/sessions`);
+        const sessions: SessionRow[] = res.ok
+          ? ((await res.json()).sessions ?? [])
+          : [];
+        if (cancelled) return;
+
+        const events: EventInput[] = sessions
+          .filter((s) => s.start_time)
+          .map((s) =>
+            sessionEvent({
               id: String(s.id),
-              title,
-              start: s.start_time,
-              end: s.end_time ?? undefined,
-              backgroundColor: "#B1E7D6",
-              borderColor: "transparent",
-              textColor: "#1F2E3B",
-            };
-          });
+              title: fullName(
+                s.coaches?.first_name,
+                s.coaches?.last_name,
+                "Session",
+              ),
+              start: s.start_time!,
+              end: s.end_time,
+            }),
+          );
         setStudentEvents(events);
-        setStudentEventsLoading(false);
-      });
+      } catch {
+        // fetch() rejects on network errors; res.json() throws on non-JSON
+        // bodies (e.g. an auth redirect to /login). Fall back to empty.
+        if (!cancelled) setStudentEvents([]);
+      } finally {
+        if (!cancelled) setStudentEventsLoading(false);
+      }
+    }
+    loadStudentEvents();
+
+    return () => {
+      cancelled = true;
+    };
   }, [selectedStudent?.id]);
 
   useEffect(() => {
@@ -262,11 +284,11 @@ export default function StudentsPage() {
             </div>
 
             <div className="bg-[#1F2E3B] rounded-2xl p-4 border border-white/5">
-              <AdminCalendar
+              <ScheduleCalendar
                 events={studentEvents}
                 initialView="dayGridMonth"
                 loading={studentEventsLoading}
-                offsetPx={340}
+                height={CALENDAR_HEIGHT}
               />
             </div>
           </div>

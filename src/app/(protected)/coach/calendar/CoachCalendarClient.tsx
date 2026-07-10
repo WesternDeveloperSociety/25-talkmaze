@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { EventClickArg, EventInput } from "@fullcalendar/core";
-import AdminCalendar from "../../admin/_components/AdminCalendar";
+import ScheduleCalendar from "@/src/components/common/calendar/ScheduleCalendar";
+import { sessionEvent } from "@/src/components/common/calendar/eventKinds";
 import RescheduleSessionModal, {
   type RescheduleSession,
 } from "../_components/RescheduleSessionModal";
@@ -12,8 +13,8 @@ interface Session extends RescheduleSession {
   student_id: string | null;
 }
 
-const SESSION_MINT = "#B1E7D6";
-const SESSION_AMBER = "#FCD34D";
+/* Page padding + card padding above the calendar eat ~250px. */
+const CALENDAR_HEIGHT = "calc(100vh - 250px)";
 
 function studentName(s: Session["students"]) {
   return fullName(s?.first_name, s?.last_name, "Session");
@@ -43,17 +44,15 @@ export default function CoachCalendarClient() {
     setEvents(
       raw.map((s) => {
         const isPending = s.reschedule_status === "pending";
-        return {
+        return sessionEvent({
           id: String(s.id),
           title: isPending
             ? `↻ ${studentName(s.students)}`
             : studentName(s.students),
           start: s.start_time,
-          end: s.end_time ?? undefined,
-          backgroundColor: isPending ? SESSION_AMBER : SESSION_MINT,
-          borderColor: "transparent",
-          textColor: "#1F2E3B",
-        };
+          end: s.end_time,
+          pendingReschedule: isPending,
+        });
       }),
     );
     setLoading(false);
@@ -72,11 +71,11 @@ export default function CoachCalendarClient() {
   return (
     <div className="w-full h-full p-4 md:p-6 mx-auto">
       <div className="bg-[#1F2E3B] rounded-2xl p-4 border border-white/5">
-        <AdminCalendar
+        <ScheduleCalendar
           events={events}
           initialView={isBelowMd ? "timeGridDay" : "dayGridMonth"}
           loading={loading}
-          offsetPx={250}
+          height={CALENDAR_HEIGHT}
           onEventClick={handleEventClick}
           dayMaxEventRows
           expandRows

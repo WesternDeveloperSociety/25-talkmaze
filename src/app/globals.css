@@ -3,7 +3,7 @@
 @import "shadcn/tailwind.css";
 @import "../styles/base.css";
 @import "../styles/rich-text.css";
-@import "../styles/fullcalendar.css";
+@import "../styles/calendar/index.css";
 
 @custom-variant dark (&:is(.dark *));
 @tailwind utilities;
@@ -85,7 +85,7 @@
 }
 
 :root {
-  /* Official TalkMaze brand palette */
+  /* Official TalkMaze brand palette (From Figma Designs) */
   --talkmaze-dark-navy: #1f2e3b; /* dark surfaces, dark button */
   --talkmaze-turquoise: #2b4257; /* app background, secondary button */
   --talkmaze-deep-purple: #59288b;
@@ -93,8 +93,10 @@
   --talkmaze-coral: #d55b40; /* emphasis number (e.g. sessions left) */
   --talkmaze-mint: #65cfad; /* saturated teal: primary CTA */
   --talkmaze-green-light: #b1e7d6; /* light mint: accent surfaces, badges */
-  /* Unofficial shade - selected / active state */
-  --talkmaze-mint-dark: #4db89a;
+
+  /* Unofficial Talkmaze brand palette  */
+  --talkmaze-mint-dark: #4db89a; /*- selected / active state */
+  --talkmaze-gold: #f2c14e; /* pending/attention: proposed sessions, pending reschedules */
 
   /* Figma grey ramp */
   --talkmaze-grey-2: #bbbbbb;
