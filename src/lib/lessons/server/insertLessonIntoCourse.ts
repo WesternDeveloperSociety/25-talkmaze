@@ -35,7 +35,7 @@ type InsertLessonResult =
  *   - Patch courses.head_lesson_id / tail_lesson_id pointers
  *   - Patch previous tail's next_lesson pointer
  *
- * Extracted from src/app/api/admin/courses/[id]/lessons/route.ts per
+ * Extracted from src/app/api/courses/[courseId]/lessons/route.ts per
  * api-contract.md §domain-logic-placement.
  */
 export async function insertLessonIntoCourse(

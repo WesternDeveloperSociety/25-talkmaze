@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import CoachAssignmentCard from "./CoachAssignmentCard";
 import { useDocumentTitle } from "@/src/hooks/useDocumentTitle";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import type { Assignment, Coach, Student } from "../_types";
 
 export default function AssignmentsPage() {
@@ -15,9 +16,9 @@ export default function AssignmentsPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/admin/employees").then((r) => r.json()),
-      fetch("/api/admin/students").then((r) => r.json()),
-      fetch("/api/admin/assignments").then((r) => r.json()),
+      apiFetch(api.coaches.list()).then((r) => r.json()),
+      apiFetch(api.students.list()).then((r) => r.json()),
+      apiFetch(api.assignments.list()).then((r) => r.json()),
     ])
       .then(([empData, stuData, asnData]) => {
         const empList = Array.isArray(empData?.employees)
@@ -61,10 +62,9 @@ export default function AssignmentsPage() {
   }, []);
 
   const handleAddAssignment = async (coachId: string, studentId: string) => {
-    const res = await fetch("/api/admin/assignments", {
+    const res = await apiFetch(api.assignments.create(), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ coach_id: coachId, student_id: studentId }),
+      json: { coach_id: coachId, student_id: studentId },
     });
     if (!res.ok) {
       alert("Failed to add assignment");
@@ -76,12 +76,14 @@ export default function AssignmentsPage() {
 
   const handleRemoveAssignment = async (assignmentId: string) => {
     setAssignments((prev) => prev.filter((a) => a.id !== assignmentId));
-    const res = await fetch(`/api/admin/assignments/${assignmentId}`, {
+    // The assignment id is the composite `<coachId>_<studentId>`.
+    const [coachId, studentId] = assignmentId.split("_");
+    const res = await apiFetch(api.assignments.remove(coachId, studentId), {
       method: "DELETE",
     });
     if (!res.ok) {
       alert("Failed to remove assignment");
-      fetch("/api/admin/assignments")
+      apiFetch(api.assignments.list())
         .then((r) => r.json())
         .then((body) =>
           setAssignments(

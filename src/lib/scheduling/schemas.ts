@@ -2,7 +2,7 @@ import { z } from "zod";
 import { isValidTimeZone, normalizeTimeZone } from "./timezones";
 
 /**
- * Body for POST /api/parent/sessions/[id]/reschedule-request. Both fields are
+ * Body for POST /api/sessions/[id]/reschedule-request. Both fields are
  * ISO 8601 datetime strings; cross-field ordering (end > start) and future-
  * dating are enforced server-side inside createRescheduleRequest so the error
  * messages can include the offending values.

@@ -15,9 +15,9 @@ import {
   LocationPinFilledIcon,
 } from "@/src/components/ui/icons";
 import { fullName, initials } from "@/src/utils/formatName";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 interface StudentHeaderBannerProps {
-  coachId: string;
   student: {
     id: string;
     first_name: string | null;
@@ -48,7 +48,6 @@ function formatDob(dob: string | null): string | null {
  * primary actions (Message the student, launch a video lesson).
  */
 export default function StudentHeaderBanner({
-  coachId,
   student,
 }: StudentHeaderBannerProps) {
   const [launching, setLaunching] = useState(false);
@@ -66,9 +65,7 @@ export default function StudentHeaderBanner({
     setError(null);
     setLaunching(true);
     try {
-      const res = await fetch(
-        `/api/coach/lessonspace/${coachId}/${student.id}`,
-      );
+      const res = await apiFetch(api.lessonspace.room(student.id));
       if (!res.ok) {
         setError("Could not open Lesson Space. Please try again.");
         return;

@@ -7,6 +7,7 @@ import CoachAttendanceSection from "./CoachAttendanceSection";
 import RescheduleSessionModal from "@/src/app/(protected)/coach/_components/RescheduleSessionModal";
 import Pagination from "@/src/components/common/Pagination";
 import type { AttendanceStatus, CoachSession } from "./types";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 const PAGE_SIZE = 5;
 
@@ -57,7 +58,7 @@ export default function AttendancePanel({
     setLoadingSchedule(true);
     try {
       const [sessionsData, attendanceData] = await Promise.all([
-        fetch(`/api/coach/sessions?student_id=${id}`).then((r) =>
+        apiFetch(api.sessions.list({ student_id: id })).then((r) =>
           r.ok ? r.json() : { sessions: [] as CoachSession[] },
         ),
         fetch(`/api/attendance?student_id=${id}`).then((r) =>

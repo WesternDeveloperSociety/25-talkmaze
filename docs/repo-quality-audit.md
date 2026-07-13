@@ -1,5 +1,7 @@
 # Code Quality Audit
 
+*Historical document (pre-July-2026 API refactor): route paths herein refer to the old audience-prefixed layout; see docs/api-contract.md "URL & naming convention" for the current structure.*
+
 Ground truth from the original read of `dev`. Severities: **CRITICAL** = security or data-loss risk; **HIGH** = bug or maintainability cliff; **MED** = inconsistency or correctness smell; **LOW** = cruft.
 
 ---

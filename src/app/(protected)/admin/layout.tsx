@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 
 import { signOut } from "@/src/lib/auth/actions/signOut";
+import { api } from "@/src/lib/api/routes";
 import CreateAdminModal from "./_components/CreateAdminModal";
 import {
   AdminMobileDetailProvider,
@@ -30,7 +31,7 @@ function AdminLayoutInner({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function checkAdminRole() {
       try {
-        const res = await fetch("/api/user/role");
+        const res = await fetch(api.me());
         if (!res.ok) throw new Error();
         const data = await res.json();
         if (data.role !== 3) router.push("/student");
@@ -112,7 +113,9 @@ function AdminLayoutInner({ children }: { children: ReactNode }) {
                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                   />
                 </svg>
-                <span className="sr-only sm:not-sr-only sm:ml-1.5">Sign out</span>
+                <span className="sr-only sm:not-sr-only sm:ml-1.5">
+                  Sign out
+                </span>
               </button>
             </form>
           </div>

@@ -24,8 +24,9 @@ export type CourseLessonsForStudent = {
  * N+1 caveat: storage URL resolution still happens in a per-lesson loop.
  * Acceptable for admin UI where the lesson count per course is small.
  *
- * Extracted from src/app/api/admin/students/lessons/[studentId]/route.ts
- * per api-contract.md §domain-logic-placement.
+ * Extracted from the students lessons route (now GET
+ * /api/students/[studentId]/lessons) per api-contract.md
+ * §domain-logic-placement.
  */
 export async function getStudentLessonsByCourse(
   supabase: SupabaseClient<Database>,

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 interface CreateAdminModalProps {
   isOpen: boolean;
@@ -25,12 +26,9 @@ export default function CreateAdminModal({
     setLoading(true);
 
     try {
-      const response = await fetch("/api/admin/create-admin", {
+      const response = await apiFetch(api.admins.create(), {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, name }),
+        json: { email, password, name },
       });
 
       const data = await response.json();

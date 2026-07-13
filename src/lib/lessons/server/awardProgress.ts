@@ -19,7 +19,7 @@ type AwardProgressResult =
  *     in the course is now status=3, award the badge. Reverting any lesson
  *     out of status=3 removes the badge.
  *
- * Extracted from src/app/api/coach/lesson-progress/route.ts — the route now
+ * Extracted from src/app/api/lesson-progress/route.ts — the route now
  * just authenticates, validates, asserts ownership, and delegates here.
  */
 export async function awardProgress(

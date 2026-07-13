@@ -18,14 +18,14 @@ export default async function CoachStudentLayout({
   params,
 }: CoachStudentLayoutProps) {
   const { studentId } = await params;
-  const { account, students } = await getCoachDashboardContext();
+  const { students } = await getCoachDashboardContext();
 
   const selectedStudent = students.find((s) => s.id === studentId);
   if (!selectedStudent) notFound();
 
   return (
     <div className="flex flex-1 flex-col gap-4 xl:min-h-0">
-      <StudentHeaderBanner coachId={account.id} student={selectedStudent} />
+      <StudentHeaderBanner student={selectedStudent} />
       <StudentTabStrip studentId={selectedStudent.id} />
       <div className="flex flex-1 flex-col xl:min-h-0 xl:overflow-y-auto">
         {children}

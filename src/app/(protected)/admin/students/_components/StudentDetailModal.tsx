@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { Student } from "../../_types";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 interface Props {
   student: Student;
@@ -104,10 +105,9 @@ export default function StudentDetailModal({
     setIsSaving(true);
     setSaveError(null);
     try {
-      const response = await fetch(`/api/admin/students/${student.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ student: editForm }),
+      const response = await apiFetch(api.students.one(student.id), {
+        method: "PATCH",
+        json: { student: editForm },
       });
       const data = await response.json();
       if (!response.ok) {

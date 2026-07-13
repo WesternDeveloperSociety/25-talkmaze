@@ -12,6 +12,7 @@ import CourseDetailModal from "./_components/CourseDetailModal";
 import CreateCourseModal from "./_components/CreateCourseModal";
 import CourseLessonsPanel from "./_components/CourseLessonPanel";
 import type { Course } from "@/src/lib/lessons/types";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import type { Student } from "../_types";
 import { useAdminMobileDetail } from "../_context/AdminMobileDetailContext";
 
@@ -39,7 +40,7 @@ export default function CoursesPage() {
     async function fetchCourses() {
       try {
         setCoursesLoading(true);
-        const res = await fetch("/api/admin/courses");
+        const res = await apiFetch(api.courses.list());
         if (!res.ok) throw new Error();
         const data = await res.json();
         const list = Array.isArray(data?.courses) ? data.courses : [];
@@ -56,7 +57,7 @@ export default function CoursesPage() {
     }
     fetchCourses();
 
-    fetch("/api/admin/students")
+    apiFetch(api.students.list())
       .then((r) => r.json())
       .then((data) =>
         setStudents(

@@ -14,6 +14,7 @@ import Pagination from "@/src/components/common/Pagination";
 import StudentDetailModal from "./_components/StudentDetailModal";
 import type { Student } from "../_types";
 import { useAdminMobileDetail } from "../_context/AdminMobileDetailContext";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -49,7 +50,7 @@ export default function StudentsPage() {
     async function fetchStudents() {
       try {
         setStudentsLoading(true);
-        const res = await fetch("/api/admin/students");
+        const res = await apiFetch(api.students.list());
         if (!res.ok) throw new Error();
         const data = await res.json();
         setStudents(
@@ -105,7 +106,7 @@ export default function StudentsPage() {
     let cancelled = false;
     async function loadStudentEvents() {
       try {
-        const res = await fetch(`/api/admin/students/${studentId}/sessions`);
+        const res = await apiFetch(api.students.sessions(studentId));
         const sessions: SessionRow[] = res.ok
           ? ((await res.json()).sessions ?? [])
           : [];

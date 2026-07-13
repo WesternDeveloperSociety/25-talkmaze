@@ -1,6 +1,6 @@
 # Scheduling System — Edge Cases & Production-Readiness Gaps
 
-A deep-dive audit of the scheduling stack: `src/lib/scheduling/server/{matchmaking,availability,previewPendingBooking}.ts`, the Stripe webhook handler, the `pending-bookings`, `coach/sessions`, `parent/.../availability`, `admin/employees/.../availability`, and `subscriptions/*` routes, plus the `student_availabilities`, `coach_availabilities`, `booked_slots`, `sessions`, `student_subscriptions`, and `session_attendance` tables.
+A deep-dive audit of the scheduling stack: `src/lib/scheduling/server/{matchmaking,availability,previewPendingBooking}.ts`, the Stripe webhook handler, the `booked-slots`, `sessions`, `students/[studentId]/availability`, `coaches/[id]/availability`, and `students/[studentId]/subscription/*` routes, plus the `student_availabilities`, `coach_availabilities`, `booked_slots`, `sessions`, `student_subscriptions`, and `session_attendance` tables.
 
 The system works for the **happy path** — single fresh student signs up, admin approves, sessions are generated for the requested count, weekly classes run. Almost every deviation from that path has a gap. They are grouped by severity below.
 
@@ -11,16 +11,16 @@ The system works for the **happy path** — single fresh student signs up, admin
 These are the gaps the user explicitly asked about. The matchmaker writes `booked_slots` and `sessions`, but almost nothing reads/edits them afterward.
 
 ### 1.1 No "cancel future lessons" flow
-- `POST /api/subscriptions/cancel` updates Stripe + `student_subscriptions.status` and the `customer.subscription.deleted` webhook flips the DB row to `cancelled`. **Neither touches `booked_slots` or `sessions`**.
+- `POST /api/students/[studentId]/subscription/cancel` updates Stripe + `student_subscriptions.status` and the `customer.subscription.deleted` webhook flips the DB row to `cancelled`. **Neither touches `booked_slots` or `sessions`**.
 - Result: a cancelled student still has an `active` `booked_slots` row blocking the coach's calendar, and N future `sessions` rows still appear on the coach's dashboard. The coach will think they have a 3pm Tuesday student forever. The matchmaker will treat the slot as permanently held when trying to place new students.
 - Refund path (`refund=true`) immediately cancels the Stripe sub but leaves the same orphaned rows. Future sessions persist for months past the refund.
 
 ### 1.2 No "change my recurring slot" flow
-- `PATCH /api/admin/pending-bookings/[id]` only matches `status="pending"`. Once approved, there is no endpoint to edit the `booked_slots` row or regenerate the sessions.
+- `PATCH /api/booked-slots/[id]` only matches `status="pending"`. Once approved, there is no endpoint to edit the `booked_slots` row or regenerate the sessions.
 - Result: if a student or coach needs a different recurring time, the only way is to (a) manually edit the DB row, (b) manually edit each future `sessions` row, or (c) re-trigger matchmaking — none of which has a UI or API.
 
 ### 1.3 No single-session reschedule with safety
-- `PATCH /api/coach/sessions/[id]` updates only `start_time`/`end_time`. It does **not**:
+- `PATCH /api/sessions/[id]` updates only `start_time`/`end_time`. It does **not**:
   - Check overlap against other sessions or active `booked_slots`.
   - Check the new time is within the coach's `coach_availabilities`.
   - Check the new time is within the student's `student_availabilities`.
@@ -40,11 +40,11 @@ These are the gaps the user explicitly asked about. The matchmaker writes `booke
 - Holiday handling is impossible without manual per-session edits. Christmas Day class is scheduled like any other Wednesday.
 
 ### 1.6 Coach availability change does not cascade
-- `PUT /api/admin/employees/[id]/availability` blows away the coach's availability rows and reinserts. Any active `booked_slots` or future `sessions` that no longer fall inside the new availability are not touched, not flagged, not surfaced. The matchmaker will read the new availability the next time it runs, but the orphaned bookings stay.
+- `PUT /api/coaches/[id]/availability` blows away the coach's availability rows and reinserts. Any active `booked_slots` or future `sessions` that no longer fall inside the new availability are not touched, not flagged, not surfaced. The matchmaker will read the new availability the next time it runs, but the orphaned bookings stay.
 - The PUT is DELETE-then-INSERT and **not transactional** (acknowledged in CLAUDE.md): a partial failure leaves the coach with zero availability and no easy way to recover.
 
 ### 1.7 Student availability change has the same problem
-- `PUT /api/parent/students/[studentId]/availability` is identical in shape. Same non-transactional risk, same lack of conflict-detection against existing bookings. A parent can change to a time-window that has zero overlap with their current `booked_slots`, and nothing breaks until next renewal.
+- `PUT /api/students/[studentId]/availability` is identical in shape. Same non-transactional risk, same lack of conflict-detection against existing bookings. A parent can change to a time-window that has zero overlap with their current `booked_slots`, and nothing breaks until next renewal.
 
 ### 1.8 No coach reassignment flow
 - If a coach quits, takes a leave of absence, or is fired, there is no endpoint to migrate a student to a new coach. The `coach_students` junction is only inserted in `approvePendingBookedSlot` and is never updated.
@@ -210,7 +210,7 @@ Most pages re-fetch on navigation so it's mostly cosmetic, but a parent who paid
 
 ## 9. Quick-win priority list (suggested)
 
-1. **Subscription cancel must cancel future sessions and deactivate the booked_slot** (§1.1, §2.5). One-line fix in `/api/subscriptions/cancel` and the `customer.subscription.deleted` webhook handler.
+1. **Subscription cancel must cancel future sessions and deactivate the booked_slot** (§1.1, §2.5). One-line fix in `/api/students/[studentId]/subscription/cancel` and the `customer.subscription.deleted` webhook handler.
 2. **Renewal must generate next month's sessions** (§2.1). Either extend `approvePendingBookedSlot` to "top up" an existing active slot, or have renewal call a new `generateNextCycleSessions(bookedSlotId, numSessions)`.
 3. **Approval race fix** (§4.1) — flip the `pending → active` update before inserting sessions, and key off the `.select()` count to decide whether to proceed.
 4. **Postgres-side overlap exclusion** on `sessions` (§6.3) — single DDL change, eliminates a whole class of race conditions.

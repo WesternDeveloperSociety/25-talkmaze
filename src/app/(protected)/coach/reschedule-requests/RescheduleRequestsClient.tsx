@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import RescheduleRequestCard from "./_components/RescheduleRequestCard";
 import type { RescheduleRequest } from "./types";
 import { formatDateTime } from "./formatters";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 export default function RescheduleRequestsClient() {
   const [requests, setRequests] = useState<RescheduleRequest[]>([]);
@@ -16,7 +17,7 @@ export default function RescheduleRequestsClient() {
 
   const loadRequests = useCallback(async () => {
     setLoading(true);
-    const res = await fetch("/api/coach/reschedule-requests");
+    const res = await apiFetch(api.rescheduleRequests.list());
     const data = await res.json();
     const list: RescheduleRequest[] = data.requests ?? [];
     setRequests(list);
@@ -40,8 +41,8 @@ export default function RescheduleRequestsClient() {
     setDecisionLoading(decision);
     setError("");
     try {
-      const res = await fetch(
-        `/api/coach/sessions/${selected.id}/reschedule-request/${decision}`,
+      const res = await apiFetch(
+        api.sessions.rescheduleDecision(selected.id, decision),
         { method: "POST" },
       );
       if (!res.ok) {

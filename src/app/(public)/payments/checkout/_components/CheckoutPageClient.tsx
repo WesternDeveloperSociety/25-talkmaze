@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import { CheckoutForm } from "./CheckoutForm";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!,
@@ -57,9 +58,13 @@ export function CheckoutPageClient() {
 
       try {
         const timeoutId = setTimeout(() => abortController.abort(), 15000);
+        // Schedule mode carries studentId in the path; checkout keeps it in the body.
         const endpoint =
-          mode === "schedule" ? "/api/subscriptions/schedule" : "/api/checkout";
-        const body: Record<string, string> = { priceId, studentId };
+          mode === "schedule"
+            ? api.students.subscription.schedule(studentId)
+            : api.checkout();
+        const body: Record<string, string> =
+          mode === "schedule" ? { priceId } : { priceId, studentId };
         if (studentId === "new") {
           if (pFName) body.pFName = pFName;
           if (pLName) body.pLName = pLName;
@@ -67,10 +72,9 @@ export function CheckoutPageClient() {
           if (sLName) body.sLName = sLName;
           if (email) body.email = email;
         }
-        const res = await fetch(endpoint, {
+        const res = await apiFetch(endpoint, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
+          json: body,
           signal: abortController.signal,
         });
         clearTimeout(timeoutId);

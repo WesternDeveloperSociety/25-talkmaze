@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/src/components/ui/button";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 export default function ResumeSubscriptionButton({
   studentId,
@@ -18,11 +19,10 @@ export default function ResumeSubscriptionButton({
     setError(null);
 
     try {
-      const res = await fetch("/api/subscriptions/resume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId }),
-      });
+      const res = await apiFetch(
+        api.students.subscription.resume(studentId ?? ""),
+        { method: "POST" },
+      );
       const data = await res.json();
 
       if (!res.ok) {

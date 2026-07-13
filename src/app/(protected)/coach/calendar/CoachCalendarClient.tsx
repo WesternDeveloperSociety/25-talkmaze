@@ -8,6 +8,7 @@ import RescheduleSessionModal, {
   type RescheduleSession,
 } from "../_components/RescheduleSessionModal";
 import { fullName } from "@/src/utils/formatName";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 interface Session extends RescheduleSession {
   student_id: string | null;
@@ -37,7 +38,7 @@ export default function CoachCalendarClient() {
   }, []);
 
   const loadSessions = useCallback(async () => {
-    const res = await fetch("/api/coach/sessions");
+    const res = await apiFetch(api.sessions.list());
     const data = await res.json();
     const raw: Session[] = data.sessions ?? [];
     setSessions(raw);

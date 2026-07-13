@@ -1,5 +1,7 @@
 # Test Rewrite Runbook
 
+*Historical document (pre-July-2026 API refactor): route paths herein refer to the old audience-prefixed layout; see docs/api-contract.md "URL & naming convention" for the current structure.*
+
 > **Status: closed (2026-05-20).** The rewrite is complete; see the "What's done" section at the bottom and `docs/testing-coverage.md` for the current state. This doc is preserved for the 5-question template (line ~156), the matrix template (line ~250), and the decision log (line ~318). The phased plan and "agent loop" sections are historical.
 
 This was the operational document for migrating the integration test suite from "describes current behaviour" to "describes the API contract."

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { AdminPlan } from "../_types";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 const inputClass =
   "w-full bg-[#2B4257] border border-white/8 text-white placeholder:text-white/25 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#B1E7D6]/40 transition-colors";
@@ -71,15 +72,17 @@ export default function CreatePlanModal({
     }
     setFetching(true);
     try {
-      const res = await fetch(
-        `/api/admin/payment-plans/stripe-preview?priceId=${encodeURIComponent(priceId.trim())}`,
+      const res = await apiFetch(
+        api.paymentPlans.stripePreview({ priceId: priceId.trim() }),
       );
       if (!res.ok) {
         const body = await res.json();
         setFetchError(body.error ?? "Price ID not found in Stripe.");
         return;
       }
-      const data: StripePreview = await res.json();
+      const { preview: data } = (await res.json()) as {
+        preview: StripePreview;
+      };
       setPreview(data);
       setName(data.product_name);
       setRenewal(
@@ -98,17 +101,16 @@ export default function CreatePlanModal({
     }
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/payment-plans", {
+      const res = await apiFetch(api.paymentPlans.create(), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        json: {
           stripe_price_id: priceId.trim(),
           name: name.trim(),
           classes: Number(classes),
           renewal: renewal.trim(),
           type: type.trim() || null,
           description: description.trim() || null,
-        }),
+        },
       });
       if (!res.ok) {
         const body = await res.json();

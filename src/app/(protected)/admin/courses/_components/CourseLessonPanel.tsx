@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Lesson, LessonInput } from "@/src/lib/lessons/types";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import { createClient } from "@/src/services/supabase/client";
 import { useRef } from "react";
 import AssignStudentDropDown from "../../_components/AssignStudentDropDown";
@@ -157,7 +158,7 @@ export default function CourseLessonsPanel({
   useEffect(() => {
     setLoading(true);
     setError(null);
-    fetch(`/api/admin/courses/${courseId}/lessons`)
+    apiFetch(api.courses.lessons(courseId))
       .then((r) => r.json())
       .then((data) => {
         if (Array.isArray(data?.lessons)) setLessons(data.lessons);
@@ -294,9 +295,9 @@ export default function CourseLessonsPanel({
         throw new Error("Error writing to S3 Bucket");
       }
 
-      const res = await fetch(`/api/admin/courses/${courseId}/lessons`, {
+      const res = await apiFetch(api.courses.lessons(courseId), {
         method: "POST",
-        body: JSON.stringify({
+        json: {
           title: addForm.title,
           lesson_id: lesson_id,
           content_url: addForm.content_url,
@@ -307,7 +308,7 @@ export default function CourseLessonsPanel({
           slide_pptx_name: slidePptxNameWithExt,
           pre_lesson_description: addPreDesc || null,
           post_lesson_description: addPostDesc || null,
-        }),
+        },
       });
 
       const data = await res.json();
@@ -445,14 +446,10 @@ export default function CourseLessonsPanel({
       if (slidePdfNameWithExt) body.slide_pdf_name = slidePdfNameWithExt;
       if (slidePptxNameWithExt) body.slide_pptx_name = slidePptxNameWithExt;
 
-      const res = await fetch(
-        `/api/admin/courses/${courseId}/lessons/${lessonId}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        },
-      );
+      const res = await apiFetch(api.courses.lesson(courseId, lessonId), {
+        method: "PATCH",
+        json: body,
+      });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to update lesson");
@@ -485,10 +482,9 @@ export default function CourseLessonsPanel({
 
     setDeletingId(lessonId);
     try {
-      const res = await fetch(
-        `/api/admin/courses/${courseId}/lessons/${lessonId}`,
-        { method: "DELETE" },
-      );
+      const res = await apiFetch(api.courses.lesson(courseId, lessonId), {
+        method: "DELETE",
+      });
 
       if (!res.ok) {
         const data = await res.json();

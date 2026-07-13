@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { AdminPlan } from "../_types";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 const inputClass =
   "w-full bg-[#2B4257] border border-white/8 text-white placeholder:text-white/25 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#B1E7D6]/40 transition-colors";
@@ -65,16 +66,15 @@ export default function PlanDetailPanel({
     }
     setSaving(true);
     try {
-      const res = await fetch(`/api/admin/payment-plans/${plan.id}`, {
+      const res = await apiFetch(api.paymentPlans.update(plan.id), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        json: {
           name: name.trim(),
           description: description.trim() || null,
           classes: Number(classes),
           renewal: renewal.trim(),
           type: type.trim() || null,
-        }),
+        },
       });
       if (!res.ok) throw new Error();
       const updated = await res.json();
@@ -90,8 +90,8 @@ export default function PlanDetailPanel({
   async function handleArchive() {
     setArchiving(true);
     try {
-      const res = await fetch(`/api/admin/payment-plans/${plan.id}/archive`, {
-        method: "PATCH",
+      const res = await apiFetch(api.paymentPlans.archive(plan.id), {
+        method: "POST",
       });
       if (!res.ok) throw new Error();
       onArchive(plan.id);

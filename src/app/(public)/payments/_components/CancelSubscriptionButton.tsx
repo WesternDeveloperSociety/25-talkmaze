@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/src/components/ui/button";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 type Props = {
   studentId?: string;
@@ -32,11 +33,10 @@ export default function CancelSubscriptionButton({
     setState("loading");
     setError(null);
     try {
-      const res = await fetch("/api/subscriptions/cancel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId, refund }),
-      });
+      const res = await apiFetch(
+        api.students.subscription.cancel(studentId ?? ""),
+        { method: "POST", json: { refund } },
+      );
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Failed to cancel subscription");

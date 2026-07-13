@@ -18,9 +18,9 @@ Companion docs:
 | `2` | Coach | `(coach)/` route group |
 | `3` | Admin | `admin/` route group |
 
-There is no fourth role today. Adding one means updating this doc, the `requireRole` helper, and the test matrices in `tests/integration/api/admin/auth-extended.test.ts`.
+There is no fourth role today. Adding one means updating this doc, the `requireRole` helper, and the role-gate matrix in `tests/integration/api/_auth-matrix.test.ts`.
 
-`role` is set at signup (`1` via DB trigger) and updated by admin-only routes (`/api/admin/create-admin` → `3`, `/api/admin/create-coach` → `2`). It is **never** trusted from a request body. Routes that accept a `role` field in their body are bugs (none today; do not add).
+`role` is set at signup (`1` via DB trigger) and updated by admin-only routes (`POST /api/admins` → `3`, `POST /api/coaches` → `2`). It is **never** trusted from a request body. Routes that accept a `role` field in their body are bugs (none today; do not add).
 
 ---
 
@@ -171,23 +171,56 @@ If/when option 2 lands, this helper stays as the implementation — middleware c
 
 ---
 
-## The role gate per route group
+## The role gate per resource
 
-The role rule is determined by the URL prefix, with one exception (`/api/attendance`). The full mapping:
+Routes are grouped by resource (`docs/api-contract.md`, "URL & naming convention") — the URL does **not** encode the role. The gate is declared per endpoint-method inside the handler. The full matrix:
 
-| Route prefix | Required roles | Notes |
-|---|---|---|
-| `/api/admin/**` | `[3]` | Without exception. 17 routes don't have this today — those are audit-flagged. |
-| `/api/coach/**` | `[2]` | Plus ownership check via `coach_students`. |
-| `/api/parent/**` | `[1]` | Plus ownership check via `students.account_id`. |
-| `/api/user/**` | `[]` (any authed) | User account self-management. |
-| `/api/profiles/**` | `[1]` | Family profile selection. |
-| `/api/lesson-progress/**` | `[1, 2, 3]` | Both family-facing and coach-facing reads. |
-| `/api/checkout` | mixed — see below | Public for `studentId === "new"`, role `[1]` otherwise. |
-| `/api/subscriptions/**` | `[1]` | Plus ownership. |
-| `/api/attendance` (GET) | `[]` (any authed) | Read access for parent + coach + admin. |
-| `/api/attendance` (POST, DELETE) | `[2, 3]` | Coach or admin only. |
-| `/api/webhooks/**` | none | Signature-verified. |
+| Resource / endpoint | Method(s) | Required roles | Notes |
+|---|---|---|---|
+| `/api/admins` | POST | `[3]` | Creates an admin account (`role: 3` hardcoded server-side). |
+| `/api/coaches` | GET, POST | `[3]` | List coaches / create a coach account (`role: 2` hardcoded server-side). |
+| `/api/coaches/[id]` | PATCH | `[3]` | |
+| `/api/coaches/[id]/availability` | GET, PUT | `[3]` | PUT = full replace. |
+| `/api/coaches/[id]/sessions` | GET | `[3]` | Admin coach calendar. |
+| `/api/students` | GET | `[1, 2, 3]` | Role-dispatched scoping: admin = all, coach = `coach_students`, parent = `account_id`. |
+| `/api/students/[studentId]` | GET | `[1]` | Plus `assertOwnsStudent`. |
+| `/api/students/[studentId]` | PATCH | `[3]` | |
+| `/api/students/[studentId]/lessons` | GET | `[2, 3]` | Coach leg plus `assertCoachAssignedToStudent`. |
+| `/api/students/[studentId]/sessions` | GET | `[3]` | Admin student calendar. |
+| `/api/students/[studentId]/availability` | GET, PUT | `[1]` | Plus ownership. PUT = full replace. |
+| `/api/students/[studentId]/parent` | GET | `[2]` | Plus `assertCoachAssignedToStudent`. |
+| `/api/students/[studentId]/active-course` | PATCH | `[1]` | Plus `assertOwnsStudent`. |
+| `/api/students/[studentId]/subscription/cancel`, `/resume`, `/schedule` | POST (+ DELETE on `/schedule`) | `[1]` | Via `resolveStudentIdForBilling`. |
+| `/api/subscriptions/invoices` | GET | `[1]` | Account-scoped billing history. |
+| `/api/checkout` | POST | mixed — see below | Public for `studentId === "new"`, role `[1]` otherwise. |
+| `/api/payment-plans/**` | all | `[3]` | Incl. `[id]/archive` action and `stripe-preview`. |
+| `/api/sessions` | GET | `[1, 2]` | Role-dispatched scoping: coach = `coach_id`, parent = own students. |
+| `/api/sessions/[id]` | PATCH | `[2]` | Plus `assertCoachOwnsSession`. |
+| `/api/sessions/[id]/reschedule-request` | POST, DELETE | `[1]` | Parent requests / withdraws. |
+| `/api/sessions/[id]/reschedule-request/approve`, `/decline` | POST | `[2]` | Coach decides. |
+| `/api/reschedule-requests` | GET | `[2]` | Coach-scoped list. |
+| `/api/conversations` | POST | `[2]` | Find-or-create (mutating → POST). |
+| `/api/conversations/[id]/messages` | GET | `[2]` | Plus `assertCoachOwnsConversation`. |
+| `/api/courses` | GET | `[2, 3]` | Role-dispatched; coach leg supports `?student_id=` + ownership. |
+| `/api/courses` | POST | `[3]` | |
+| `/api/courses/[courseId]` | PATCH, DELETE | `[3]` | |
+| `/api/courses/[courseId]/lessons` (+ `/[lessonId]`) | all | `[3]` | |
+| `/api/courses/[courseId]/students` | GET | `[3]` | `?assigned=false` only — assignable-candidates picker, **not** an enrollment list. |
+| `/api/courses/[courseId]/students` | POST | `[2, 3]` | Assign course; coach leg plus `assertCoachAssignedToStudent`. |
+| `/api/courses/[courseId]/students/[studentId]` | DELETE | `[2, 3]` | Soft delete (`isActive: false`). |
+| `/api/lessons` | GET | `[2]` | No admin-scoped query exists — gate stays `[2]`. |
+| `/api/lesson-tasks` | PATCH | `[2]` | Multipart FormData. |
+| `/api/lesson-progress` | GET | `[1, 2, 3]` | Handler resolves the caller's own student row. |
+| `/api/lesson-progress` | PATCH | `[2]` | Plus `assertCoachAssignedToStudent`. |
+| `/api/lesson-progress/feedback` | PATCH | `[2]` | |
+| `/api/booked-slots/**` | all | `[3]` | Incl. `[id]/approve`, `[id]/preview` actions. |
+| `/api/assignments/**` | all | `[3]` | `[id]` is the composite `<coachId>_<studentId>`. |
+| `/api/attendance` | GET | `[]` (any authed) | Read access for parent + coach + admin. |
+| `/api/attendance` | POST, DELETE | `[2, 3]` | Coach or admin only. |
+| `/api/me` | GET | `[]` (any authed) | Current user's role/account info. |
+| `/api/parents/setup` | PATCH | `[1]` | |
+| `/api/lessonspace/rooms/[studentId]` | GET | `[2]` | Plus `assertCoachAssignedToStudent`. |
+| `/api/webhooks/**` | POST | none | Signature-verified. |
 
 When this matrix changes, update this doc *first*, then the helper's call sites.
 
@@ -223,7 +256,7 @@ Today's checkout route gets this branch wrong in two ways: it logs the password 
 
 ### "Auth-via-data-lookup"
 
-Several coach routes today do:
+Several pre-rewrite coach routes did this:
 
 ```ts
 const { data: coach } = await supabase.from("coaches").select("id").eq("account_id", user.id).single();
@@ -277,7 +310,7 @@ try {
 
 ### "Commented-out auth check"
 
-`src/app/api/admin/create-admin/route.ts:41-46` — the role check is in a comment block. This is the canonical example in the audit. Any commented-out auth is a critical bug. If a check is wrong, fix it; don't disable it.
+Historical example: the pre-refactor `admin/create-admin` route (now `POST /api/admins`) had its role check sitting in a comment block (`route.ts:41-46` at audit time). This was the canonical example in the audit. Any commented-out auth is a critical bug. If a check is wrong, fix it; don't disable it.
 
 ---
 
@@ -309,7 +342,7 @@ for (const c of AUTH_CASES) {
       // A 403 from the ownership layer (e.g. assertOwnsStudent on a FAKE_ID
       // resource we pass in the request) is contract-correct and is exercised
       // by the per-route test file. Asserting not-403 here would falsely flag
-      // ownership-coupled routes (subscriptions, parent/students, coach/*).
+      // ownership-coupled routes (subscription actions, student- and coach-scoped routes).
       expect(c.call(cookiesFor(r))).status.not.toBe(401);
     }
   });

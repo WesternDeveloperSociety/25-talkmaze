@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 interface CreateCourseModalProps {
   isOpen: boolean;
@@ -26,10 +27,9 @@ export default function CreateCourseModal({ isOpen, onClose, onSuccess }: Create
     setIsSubmitting(true);
     setError(null);
     try {
-      const response = await fetch("/api/admin/courses", {
+      const response = await apiFetch(api.courses.create(), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ course: { name: name.trim(), description: description.trim() || undefined } }),
+        json: { course: { name: name.trim(), description: description.trim() || undefined } },
       });
       if (!response.ok) {
         const data = await response.json();

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { StudentProp } from "./ParentScheduleClient";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import { WEEKDAYS } from "@/src/lib/scheduling/types";
 import { availabilityFormSchema } from "@/src/lib/scheduling/schemas";
 import {
@@ -47,9 +48,7 @@ export default function EditStudentAvailabilityModal({
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
     initialStudentId ?? students[0]?.id ?? "",
   );
-  const [availability, setAvailability] = useState<WeeklyAvailabilityValue>(
-    {},
-  );
+  const [availability, setAvailability] = useState<WeeklyAvailabilityValue>({});
   const [timezone, setTimezone] = useState(DEFAULT_TIME_ZONE);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -67,7 +66,7 @@ export default function EditStudentAvailabilityModal({
       setSaveSuccess(false);
       setErrors({});
 
-      fetch(`/api/parent/students/${selectedStudentId}/availability`)
+      apiFetch(api.students.availability(selectedStudentId))
         .then((r) => r.json())
         .then(
           (body: {
@@ -147,14 +146,10 @@ export default function EditStudentAvailabilityModal({
     setTimezone(timeZoneToSave);
     setSaving(true);
 
-    const res = await fetch(
-      `/api/parent/students/${selectedStudentId}/availability`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ availability, timezone: timeZoneToSave }),
-      },
-    );
+    const res = await apiFetch(api.students.availability(selectedStudentId), {
+      method: "PUT",
+      json: { availability, timezone: timeZoneToSave },
+    });
 
     setSaving(false);
 

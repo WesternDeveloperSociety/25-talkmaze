@@ -19,7 +19,8 @@ The codebase uses route-level collocation for UI and route-only logic, with shar
 ### API Routes
 
 - `src/app/api/` 
-- Organized by role/domain: `admin/`, `coach/`, `parent/`, `user/`, `profiles/`.
+- Organized by resource (`students/`, `coaches/`, `sessions/`, `courses/`, `payment-plans/`, ...) — the caller's role is enforced inside each handler, never encoded in the URL. See `docs/api-contract.md` ("URL & naming convention") and the role matrix in `docs/api-auth.md`.
+- Client fetches build URLs from the typed registry `src/lib/api/routes.ts` (never inline `/api/...` string literals).
 - `webhooks/` contains handlers for external provider callbacks 
 
 ### Shared Code

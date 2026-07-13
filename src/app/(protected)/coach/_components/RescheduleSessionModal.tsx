@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { fullName } from "@/src/utils/formatName";
 import { toDatetimeLocalValue } from "@/src/utils/formatDateTime";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 export interface RescheduleSession {
   id: number;
@@ -59,13 +60,12 @@ export default function RescheduleSessionModal({
     setSaving(true);
     setSaveError("");
     try {
-      const res = await fetch(`/api/coach/sessions/${session.id}`, {
+      const res = await apiFetch(api.sessions.update(session.id), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        json: {
           start_time: new Date(startVal).toISOString(),
           end_time: new Date(endVal).toISOString(),
-        }),
+        },
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
@@ -82,8 +82,8 @@ export default function RescheduleSessionModal({
     setDecisionLoading(decision);
     setSaveError("");
     try {
-      const res = await fetch(
-        `/api/coach/sessions/${session.id}/reschedule-request/${decision}`,
+      const res = await apiFetch(
+        api.sessions.rescheduleDecision(session.id, decision),
         { method: "POST" },
       );
       if (!res.ok) {

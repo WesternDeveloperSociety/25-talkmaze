@@ -55,64 +55,70 @@ import { server } from "@tests/helpers/msw";
 // ── Route handlers ────────────────────────────────────────────────────────────
 
 // Admin
-import { GET as assignmentsGET, POST as assignmentsPOST } from "@/src/app/api/admin/assignments/route";
-import { DELETE as assignmentsDELETE } from "@/src/app/api/admin/assignments/[id]/route";
-import { GET as coursesGET, POST as coursesPOST } from "@/src/app/api/admin/courses/route";
-import { PUT as coursesPUT, DELETE as coursesDELETE } from "@/src/app/api/admin/courses/[id]/route";
-import { GET as courseLessonsGET, POST as courseLessonsPOST } from "@/src/app/api/admin/courses/[id]/lessons/route";
-import { PUT as lessonPUT, DELETE as lessonDELETE } from "@/src/app/api/admin/courses/[id]/lessons/[lessonId]/route";
-import { POST as courseAssignPOST } from "@/src/app/api/admin/courses/assign/route";
-import { POST as createAdminPOST } from "@/src/app/api/admin/create-admin/route";
-import { POST as createCoachPOST } from "@/src/app/api/admin/create-coach/route";
-import { GET as employeesGET } from "@/src/app/api/admin/employees/route";
-import { PUT as employeePUT } from "@/src/app/api/admin/employees/[id]/route";
-import { GET as employeeAvailGET, PUT as employeeAvailPUT } from "@/src/app/api/admin/employees/[id]/availability/route";
-import { GET as plansGET, POST as plansPOST } from "@/src/app/api/admin/payment-plans/route";
-import { PATCH as planPATCH } from "@/src/app/api/admin/payment-plans/[id]/route";
-import { PATCH as planArchivePATCH } from "@/src/app/api/admin/payment-plans/[id]/archive/route";
-import { GET as stripePreviewGET } from "@/src/app/api/admin/payment-plans/stripe-preview/route";
-import { GET as pendingGET } from "@/src/app/api/admin/pending-bookings/route";
-import { PATCH as bookingPATCH } from "@/src/app/api/admin/pending-bookings/[id]/route";
-import { POST as bookingPreviewPOST } from "@/src/app/api/admin/pending-bookings/[id]/preview/route";
-import { POST as bookingApprovePOST } from "@/src/app/api/admin/pending-bookings/[id]/approve/route";
-import { GET as studentsGET } from "@/src/app/api/admin/students/route";
-import { PUT as studentPUT } from "@/src/app/api/admin/students/[id]/route";
-import { GET as studentLessonsGET } from "@/src/app/api/admin/students/lessons/[studentId]/route";
+import { GET as assignmentsGET, POST as assignmentsPOST } from "@/src/app/api/assignments/route";
+import { DELETE as assignmentsDELETE } from "@/src/app/api/assignments/[id]/route";
+import { GET as coursesGET, POST as coursesPOST } from "@/src/app/api/courses/route";
+import { PATCH as coursesPATCH, DELETE as coursesDELETE } from "@/src/app/api/courses/[courseId]/route";
+import { GET as courseLessonsGET, POST as courseLessonsPOST } from "@/src/app/api/courses/[courseId]/lessons/route";
+import { PATCH as lessonPATCH, DELETE as lessonDELETE } from "@/src/app/api/courses/[courseId]/lessons/[lessonId]/route";
+import { GET as courseStudentsGET, POST as courseStudentsPOST } from "@/src/app/api/courses/[courseId]/students/route";
+import { DELETE as courseStudentDELETE } from "@/src/app/api/courses/[courseId]/students/[studentId]/route";
+import { POST as createAdminPOST } from "@/src/app/api/admins/route";
+import { GET as coachesGET, POST as createCoachPOST } from "@/src/app/api/coaches/route";
+import { PATCH as coachPATCH } from "@/src/app/api/coaches/[id]/route";
+import { GET as coachAvailGET, PUT as coachAvailPUT } from "@/src/app/api/coaches/[id]/availability/route";
+import { GET as coachSessionsGET } from "@/src/app/api/coaches/[id]/sessions/route";
+import { GET as plansGET, POST as plansPOST } from "@/src/app/api/payment-plans/route";
+import { PATCH as planPATCH } from "@/src/app/api/payment-plans/[id]/route";
+import { POST as planArchivePOST } from "@/src/app/api/payment-plans/[id]/archive/route";
+import { GET as stripePreviewGET } from "@/src/app/api/payment-plans/stripe-preview/route";
+import { GET as pendingGET } from "@/src/app/api/booked-slots/route";
+import { PATCH as bookingPATCH } from "@/src/app/api/booked-slots/[id]/route";
+import { POST as bookingPreviewPOST } from "@/src/app/api/booked-slots/[id]/preview/route";
+import { POST as bookingApprovePOST } from "@/src/app/api/booked-slots/[id]/approve/route";
+
+// Students
+import { GET as studentsGET } from "@/src/app/api/students/route";
+import { GET as studentGET, PATCH as studentPATCH } from "@/src/app/api/students/[studentId]/route";
+import { GET as studentLessonsGET } from "@/src/app/api/students/[studentId]/lessons/route";
+import { GET as studentSessionsGET } from "@/src/app/api/students/[studentId]/sessions/route";
+import { GET as studentAvailGET, PUT as studentAvailPUT } from "@/src/app/api/students/[studentId]/availability/route";
+import { GET as studentParentGET } from "@/src/app/api/students/[studentId]/parent/route";
+import { PATCH as activeCoursePATCH } from "@/src/app/api/students/[studentId]/active-course/route";
 
 // Coach
-import { GET as coachConversationGET } from "@/src/app/api/coach/conversation/route";
-import { GET as coachCoursesGET } from "@/src/app/api/coach/courses/route";
-import { POST as coachCourseAssignPOST } from "@/src/app/api/coach/courses/assign/route";
-import { GET as coachConversationMsgGET } from "@/src/app/api/coach/conversation/message/route";
-import { PATCH as coachFeedbackPATCH } from "@/src/app/api/coach/lesson-feedback/route";
-import { PATCH as coachProgressPATCH } from "@/src/app/api/coach/lesson-progress/route";
-import { GET as coachLessonsGET } from "@/src/app/api/coach/lessons/route";
-import { GET as coachLessonspaceGET } from "@/src/app/api/coach/lessonspace/[coachId]/[studentId]/route";
-import { GET as coachSessionsGET } from "@/src/app/api/coach/sessions/route";
-import { PATCH as coachSessionPATCH } from "@/src/app/api/coach/sessions/[id]/route";
-import { GET as coachStudentsGET } from "@/src/app/api/coach/students/route";
-import { GET as coachStudentLessonsGET } from "@/src/app/api/coach/students/lessons/[studentId]/route";
-import { GET as coachStudentParentGET } from "@/src/app/api/coach/students/[studentId]/parent/route";
+import { POST as conversationsPOST } from "@/src/app/api/conversations/route";
+import { GET as conversationMessagesGET } from "@/src/app/api/conversations/[id]/messages/route";
+import { PATCH as coachFeedbackPATCH } from "@/src/app/api/lesson-progress/feedback/route";
+import { PATCH as coachProgressPATCH } from "@/src/app/api/lesson-progress/route";
+import { GET as coachLessonsGET } from "@/src/app/api/lessons/route";
+import { GET as coachLessonspaceGET } from "@/src/app/api/lessonspace/rooms/[studentId]/route";
+
+// Sessions & reschedule requests
+import { GET as sessionsGET } from "@/src/app/api/sessions/route";
+import { PATCH as sessionPATCH } from "@/src/app/api/sessions/[id]/route";
+import { POST as rescheduleRequestPOST, DELETE as rescheduleRequestDELETE } from "@/src/app/api/sessions/[id]/reschedule-request/route";
+import { POST as rescheduleApprovePOST } from "@/src/app/api/sessions/[id]/reschedule-request/approve/route";
+import { POST as rescheduleDeclinePOST } from "@/src/app/api/sessions/[id]/reschedule-request/decline/route";
+import { GET as rescheduleRequestsGET } from "@/src/app/api/reschedule-requests/route";
 
 // Parent
-import { PATCH as parentSetupPATCH } from "@/src/app/api/parent/setup/route";
-import { GET as parentSessionsGET } from "@/src/app/api/parent/sessions/route";
-import { GET as parentStudentsGET } from "@/src/app/api/parent/students/route";
-import { GET as parentStudentGET } from "@/src/app/api/parent/students/[studentId]/route";
-import { GET as parentStudentAvailGET, PUT as parentStudentAvailPUT } from "@/src/app/api/parent/students/[studentId]/availability/route";
+import { PATCH as parentSetupPATCH } from "@/src/app/api/parents/setup/route";
 
 // User / Profiles / Lesson-progress
-import { GET as userRoleGET } from "@/src/app/api/user/role/route";
+import { GET as userRoleGET } from "@/src/app/api/me/route";
 import { GET as lessonProgressGET } from "@/src/app/api/lesson-progress/route";
 
 // Checkout
 import { POST as checkoutPOST } from "@/src/app/api/checkout/route";
 
-// Subscriptions
-import { POST as subCancelPOST } from "@/src/app/api/subscriptions/cancel/route";
-import { POST as subResumePOST } from "@/src/app/api/subscriptions/resume/route";
-import { POST as subSchedulePOST } from "@/src/app/api/subscriptions/schedule/route";
-import { POST as subScheduleCancelPOST } from "@/src/app/api/subscriptions/schedule/cancel/route";
+// Billing (student subscription + invoices)
+import { POST as subCancelPOST } from "@/src/app/api/students/[studentId]/subscription/cancel/route";
+import { POST as subResumePOST } from "@/src/app/api/students/[studentId]/subscription/resume/route";
+import {
+  POST as subSchedulePOST,
+  DELETE as subScheduleDELETE,
+} from "@/src/app/api/students/[studentId]/subscription/schedule/route";
 import { GET as subInvoicesGET } from "@/src/app/api/subscriptions/invoices/route";
 
 // Attendance
@@ -139,63 +145,71 @@ type AuthCase = {
 
 const AUTH_CASES: AuthCase[] = [
   // ─── Admin (role [3]) ──────────────────────────────────────────────────────
-  { name: "GET /api/admin/assignments", call: (c) => call(assignmentsGET, { cookies: c }), allowed: [3] },
-  { name: "POST /api/admin/assignments", call: (c) => call(assignmentsPOST, { method: "POST", cookies: c, body: { coachId: FAKE_ID, studentId: FAKE_ID } }), allowed: [3] },
-  { name: "DELETE /api/admin/assignments/[id]", call: (c) => call(assignmentsDELETE, { method: "DELETE", cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
-  { name: "GET /api/admin/courses", call: (c) => call(coursesGET, { cookies: c }), allowed: [3] },
-  { name: "POST /api/admin/courses", call: (c) => call(coursesPOST, { method: "POST", cookies: c, body: { course: { title: "Test" } } }), allowed: [3] },
-  { name: "PUT /api/admin/courses/[id]", call: (c) => call(coursesPUT, { method: "PUT", cookies: c, params: { id: FAKE_ID }, body: { course: { title: "Updated" } } }), allowed: [3] },
-  { name: "DELETE /api/admin/courses/[id]", call: (c) => call(coursesDELETE, { method: "DELETE", cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
-  { name: "GET /api/admin/courses/[id]/lessons", call: (c) => call(courseLessonsGET, { cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
-  { name: "POST /api/admin/courses/[id]/lessons", call: (c) => call(courseLessonsPOST, { method: "POST", cookies: c, params: { id: FAKE_ID }, body: { title: "L", slug: `l-${Date.now()}` } }), allowed: [3] },
-  { name: "PUT /api/admin/courses/[id]/lessons/[lessonId]", call: (c) => call(lessonPUT, { method: "PUT", cookies: c, params: { id: FAKE_ID, lessonId: FAKE_ID }, body: { title: "U" } }), allowed: [3] },
-  { name: "DELETE /api/admin/courses/[id]/lessons/[lessonId]", call: (c) => call(lessonDELETE, { method: "DELETE", cookies: c, params: { id: FAKE_ID, lessonId: FAKE_ID } }), allowed: [3] },
-  { name: "POST /api/admin/courses/assign", call: (c) => call(courseAssignPOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID, courseId: FAKE_ID } }), allowed: [3] },
-  { name: "POST /api/admin/create-admin", call: (c) => call(createAdminPOST, { method: "POST", cookies: c, body: { email: `admin-${Date.now()}@t.com`, password: "Password123!", name: "Admin" } }), allowed: [3] },
-  { name: "POST /api/admin/create-coach", call: (c) => call(createCoachPOST, { method: "POST", cookies: c, body: { email: `coach-${Date.now()}@t.com`, password: "Password123!", firstName: "C", lastName: "T" } }), allowed: [3] },
-  { name: "GET /api/admin/employees", call: (c) => call(employeesGET, { cookies: c }), allowed: [3] },
-  { name: "PUT /api/admin/employees/[id]", call: (c) => call(employeePUT, { method: "PUT", cookies: c, params: { id: FAKE_ID }, body: { employee: { first_name: "U", last_name: "C" } } }), allowed: [3] },
-  { name: "GET /api/admin/employees/[id]/availability", call: (c) => call(employeeAvailGET, { cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
-  { name: "PUT /api/admin/employees/[id]/availability", call: (c) => call(employeeAvailPUT, { method: "PUT", cookies: c, params: { id: FAKE_ID }, body: { weekday: 1, start_time: "09:00", end_time: "17:00", timezone: "America/New_York" } }), allowed: [3] },
-  { name: "GET /api/admin/payment-plans", call: (c) => call(plansGET, { cookies: c }), allowed: [3] },
-  { name: "POST /api/admin/payment-plans", call: (c) => call(plansPOST, { method: "POST", cookies: c, body: { name: "P", classes: 8, cents: 9900, currency: "usd", renewal: "monthly", stripe_price_id: `price_${Date.now()}` } }), allowed: [3] },
-  { name: "PATCH /api/admin/payment-plans/[id]", call: (c) => call(planPATCH, { method: "PATCH", cookies: c, params: { id: FAKE_ID }, body: { name: "U" } }), allowed: [3] },
-  { name: "PATCH /api/admin/payment-plans/[id]/archive", call: (c) => call(planArchivePATCH, { method: "PATCH", cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
-  { name: "GET /api/admin/payment-plans/stripe-preview", call: (c) => call(stripePreviewGET, { cookies: c, query: { priceId: "price_test" } }), allowed: [3] },
-  { name: "GET /api/admin/pending-bookings", call: (c) => call(pendingGET, { cookies: c }), allowed: [3] },
-  { name: "PATCH /api/admin/pending-bookings/[id]", call: (c) => call(bookingPATCH, { method: "PATCH", cookies: c, params: { id: FAKE_ID }, body: { weekday: 1, start_time: "10:00", end_time: "11:00", timezone: "America/New_York" } }), allowed: [3] },
-  { name: "POST /api/admin/pending-bookings/[id]/preview", call: (c) => call(bookingPreviewPOST, { method: "POST", cookies: c, params: { id: FAKE_ID }, body: { coach_id: FAKE_ID, weekday: 1, start_time: "10:00", end_time: "11:00", timezone: "America/New_York", num_sessions: 8, start_date: "2025-01-01" } }), allowed: [3] },
-  { name: "POST /api/admin/pending-bookings/[id]/approve", call: (c) => call(bookingApprovePOST, { method: "POST", cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
-  { name: "GET /api/admin/students", call: (c) => call(studentsGET, { cookies: c }), allowed: [3] },
-  { name: "PUT /api/admin/students/[id]", call: (c) => call(studentPUT, { method: "PUT", cookies: c, params: { id: FAKE_ID }, body: { student: { first_name: "U", last_name: "S" } } }), allowed: [3] },
-  { name: "GET /api/admin/students/lessons/[studentId]", call: (c) => call(studentLessonsGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [3] },
+  { name: "GET /api/assignments", call: (c) => call(assignmentsGET, { cookies: c }), allowed: [3] },
+  { name: "POST /api/assignments", call: (c) => call(assignmentsPOST, { method: "POST", cookies: c, body: { coachId: FAKE_ID, studentId: FAKE_ID } }), allowed: [3] },
+  { name: "DELETE /api/assignments/[id]", call: (c) => call(assignmentsDELETE, { method: "DELETE", cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
+  { name: "GET /api/courses", call: (c) => call(coursesGET, { cookies: c }), allowed: [2, 3] },
+  { name: "POST /api/courses", call: (c) => call(coursesPOST, { method: "POST", cookies: c, body: { course: { title: "Test" } } }), allowed: [3] },
+  { name: "PATCH /api/courses/[courseId]", call: (c) => call(coursesPATCH, { method: "PATCH", cookies: c, params: { courseId: FAKE_ID }, body: { course: { title: "Updated" } } }), allowed: [3] },
+  { name: "DELETE /api/courses/[courseId]", call: (c) => call(coursesDELETE, { method: "DELETE", cookies: c, params: { courseId: FAKE_ID } }), allowed: [3] },
+  { name: "GET /api/courses/[courseId]/lessons", call: (c) => call(courseLessonsGET, { cookies: c, params: { courseId: FAKE_ID } }), allowed: [3] },
+  { name: "POST /api/courses/[courseId]/lessons", call: (c) => call(courseLessonsPOST, { method: "POST", cookies: c, params: { courseId: FAKE_ID }, body: { title: "L", slug: `l-${Date.now()}` } }), allowed: [3] },
+  { name: "PATCH /api/courses/[courseId]/lessons/[lessonId]", call: (c) => call(lessonPATCH, { method: "PATCH", cookies: c, params: { courseId: FAKE_ID, lessonId: FAKE_ID }, body: { title: "U" } }), allowed: [3] },
+  { name: "DELETE /api/courses/[courseId]/lessons/[lessonId]", call: (c) => call(lessonDELETE, { method: "DELETE", cookies: c, params: { courseId: FAKE_ID, lessonId: FAKE_ID } }), allowed: [3] },
+  { name: "GET /api/courses/[courseId]/students", call: (c) => call(courseStudentsGET, { cookies: c, params: { courseId: FAKE_ID }, query: { assigned: "false" } }), allowed: [3] },
+  { name: "POST /api/courses/[courseId]/students", call: (c) => call(courseStudentsPOST, { method: "POST", cookies: c, params: { courseId: FAKE_ID }, body: { studentId: FAKE_ID } }), allowed: [2, 3] },
+  { name: "DELETE /api/courses/[courseId]/students/[studentId]", call: (c) => call(courseStudentDELETE, { method: "DELETE", cookies: c, params: { courseId: FAKE_ID, studentId: FAKE_ID } }), allowed: [2, 3] },
+  { name: "POST /api/admins", call: (c) => call(createAdminPOST, { method: "POST", cookies: c, body: { email: `admin-${Date.now()}@t.com`, password: "Password123!", name: "Admin" } }), allowed: [3] },
+  { name: "POST /api/coaches", call: (c) => call(createCoachPOST, { method: "POST", cookies: c, body: { email: `coach-${Date.now()}@t.com`, password: "Password123!", firstName: "C", lastName: "T" } }), allowed: [3] },
+  { name: "GET /api/coaches", call: (c) => call(coachesGET, { cookies: c }), allowed: [3] },
+  { name: "PATCH /api/coaches/[id]", call: (c) => call(coachPATCH, { method: "PATCH", cookies: c, params: { id: FAKE_ID }, body: { employee: { first_name: "U", last_name: "C" } } }), allowed: [3] },
+  { name: "GET /api/coaches/[id]/availability", call: (c) => call(coachAvailGET, { cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
+  { name: "PUT /api/coaches/[id]/availability", call: (c) => call(coachAvailPUT, { method: "PUT", cookies: c, params: { id: FAKE_ID }, body: { weekday: 1, start_time: "09:00", end_time: "17:00", timezone: "America/New_York" } }), allowed: [3] },
+  { name: "GET /api/coaches/[id]/sessions", call: (c) => call(coachSessionsGET, { cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
+  { name: "GET /api/payment-plans", call: (c) => call(plansGET, { cookies: c }), allowed: [3] },
+  { name: "POST /api/payment-plans", call: (c) => call(plansPOST, { method: "POST", cookies: c, body: { name: "P", classes: 8, cents: 9900, currency: "usd", renewal: "monthly", stripe_price_id: `price_${Date.now()}` } }), allowed: [3] },
+  { name: "PATCH /api/payment-plans/[id]", call: (c) => call(planPATCH, { method: "PATCH", cookies: c, params: { id: FAKE_ID }, body: { name: "U" } }), allowed: [3] },
+  { name: "POST /api/payment-plans/[id]/archive", call: (c) => call(planArchivePOST, { method: "POST", cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
+  { name: "GET /api/payment-plans/stripe-preview", call: (c) => call(stripePreviewGET, { cookies: c, query: { priceId: "price_test" } }), allowed: [3] },
+  { name: "GET /api/booked-slots", call: (c) => call(pendingGET, { cookies: c, query: { status: "pending" } }), allowed: [3] },
+  { name: "PATCH /api/booked-slots/[id]", call: (c) => call(bookingPATCH, { method: "PATCH", cookies: c, params: { id: FAKE_ID }, body: { weekday: 1, start_time: "10:00", end_time: "11:00", timezone: "America/New_York" } }), allowed: [3] },
+  { name: "POST /api/booked-slots/[id]/preview", call: (c) => call(bookingPreviewPOST, { method: "POST", cookies: c, params: { id: FAKE_ID }, body: { coach_id: FAKE_ID, weekday: 1, start_time: "10:00", end_time: "11:00", timezone: "America/New_York", num_sessions: 8, start_date: "2025-01-01" } }), allowed: [3] },
+  { name: "POST /api/booked-slots/[id]/approve", call: (c) => call(bookingApprovePOST, { method: "POST", cookies: c, params: { id: FAKE_ID } }), allowed: [3] },
 
   // ─── Coach (role [2]) ──────────────────────────────────────────────────────
-  { name: "GET /api/coach/conversation", call: (c) => call(coachConversationGET, { cookies: c, query: { contactId: FAKE_ID } }), allowed: [2] },
-  { name: "GET /api/coach/courses", call: (c) => call(coachCoursesGET, { cookies: c }), allowed: [2] },
-  { name: "POST /api/coach/courses/assign", call: (c) => call(coachCourseAssignPOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID, courseId: FAKE_ID } }), allowed: [2] },
-  { name: "GET /api/coach/conversation/message", call: (c) => call(coachConversationMsgGET, { cookies: c, query: { conversationId: FAKE_ID } }), allowed: [2] },
-  { name: "PATCH /api/coach/lesson-feedback", call: (c) => call(coachFeedbackPATCH, { method: "PATCH", cookies: c, body: { student_id: FAKE_ID, lesson_id: FAKE_ID, positive_feedback: "<p>x</p>", improvement_feedback: "<p>y</p>" } }), allowed: [2] },
-  { name: "PATCH /api/coach/lesson-progress", call: (c) => call(coachProgressPATCH, { method: "PATCH", cookies: c, body: { student_id: FAKE_ID, lesson_id: FAKE_ID, status: 2 } }), allowed: [2] },
+  { name: "POST /api/conversations", call: (c) => call(conversationsPOST, { method: "POST", cookies: c, body: { contactId: FAKE_ID } }), allowed: [2] },
+  { name: "GET /api/conversations/[id]/messages", call: (c) => call(conversationMessagesGET, { cookies: c, params: { id: FAKE_ID } }), allowed: [2] },
+  { name: "PATCH /api/lesson-progress/feedback", call: (c) => call(coachFeedbackPATCH, { method: "PATCH", cookies: c, body: { student_id: FAKE_ID, lesson_id: FAKE_ID, positive_feedback: "<p>x</p>", improvement_feedback: "<p>y</p>" } }), allowed: [2] },
+  { name: "PATCH /api/lesson-progress", call: (c) => call(coachProgressPATCH, { method: "PATCH", cookies: c, body: { student_id: FAKE_ID, lesson_id: FAKE_ID, status: 2 } }), allowed: [2] },
   // lesson-tasks uses FormData (multipart) — request.ts only sends JSON; covered by per-route file with a FormData helper (Phase 3+).
-  { name: "GET /api/coach/lessons", call: (c) => call(coachLessonsGET, { cookies: c, query: { studentId: FAKE_ID } }), allowed: [2] },
-  { name: "GET /api/coach/lessonspace/[coachId]/[studentId]", call: (c) => call(coachLessonspaceGET, { cookies: c, params: { coachId: FAKE_ID, studentId: FAKE_ID } }), allowed: [2] },
-  { name: "GET /api/coach/sessions", call: (c) => call(coachSessionsGET, { cookies: c }), allowed: [2] },
-  { name: "PATCH /api/coach/sessions/[id]", call: (c) => call(coachSessionPATCH, { method: "PATCH", cookies: c, params: { id: FAKE_ID }, body: {} }), allowed: [2] },
-  { name: "GET /api/coach/students", call: (c) => call(coachStudentsGET, { cookies: c }), allowed: [2] },
-  { name: "GET /api/coach/students/lessons/[studentId]", call: (c) => call(coachStudentLessonsGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [2] },
-  { name: "GET /api/coach/students/[studentId]/parent", call: (c) => call(coachStudentParentGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [2] },
+  { name: "GET /api/lessons", call: (c) => call(coachLessonsGET, { cookies: c, query: { studentId: FAKE_ID } }), allowed: [2] },
+  { name: "GET /api/lessonspace/rooms/[studentId]", call: (c) => call(coachLessonspaceGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [2] },
+
+  // ─── Sessions & reschedule requests (role-dispatched resource) ─────────────
+  { name: "GET /api/sessions", call: (c) => call(sessionsGET, { cookies: c }), allowed: [1, 2] },
+  { name: "PATCH /api/sessions/[id]", call: (c) => call(sessionPATCH, { method: "PATCH", cookies: c, params: { id: FAKE_ID }, body: {} }), allowed: [2] },
+  { name: "POST /api/sessions/[id]/reschedule-request", call: (c) => call(rescheduleRequestPOST, { method: "POST", cookies: c, params: { id: FAKE_ID }, body: {} }), allowed: [1] },
+  { name: "DELETE /api/sessions/[id]/reschedule-request", call: (c) => call(rescheduleRequestDELETE, { method: "DELETE", cookies: c, params: { id: FAKE_ID } }), allowed: [1] },
+  { name: "POST /api/sessions/[id]/reschedule-request/approve", call: (c) => call(rescheduleApprovePOST, { method: "POST", cookies: c, params: { id: FAKE_ID } }), allowed: [2] },
+  { name: "POST /api/sessions/[id]/reschedule-request/decline", call: (c) => call(rescheduleDeclinePOST, { method: "POST", cookies: c, params: { id: FAKE_ID } }), allowed: [2] },
+  { name: "GET /api/reschedule-requests", call: (c) => call(rescheduleRequestsGET, { cookies: c }), allowed: [2] },
 
   // ─── Parent (role [1]) ─────────────────────────────────────────────────────
-  { name: "PATCH /api/parent/setup", call: (c) => call(parentSetupPATCH, { method: "PATCH", cookies: c, body: {} }), allowed: [1] },
-  { name: "GET /api/parent/sessions", call: (c) => call(parentSessionsGET, { cookies: c }), allowed: [1] },
-  { name: "GET /api/parent/students", call: (c) => call(parentStudentsGET, { cookies: c }), allowed: [1] },
-  { name: "GET /api/parent/students/[studentId]", call: (c) => call(parentStudentGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [1] },
-  { name: "GET /api/parent/students/[studentId]/availability", call: (c) => call(parentStudentAvailGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [1] },
-  { name: "PUT /api/parent/students/[studentId]/availability", call: (c) => call(parentStudentAvailPUT, { method: "PUT", cookies: c, params: { studentId: FAKE_ID }, body: {} }), allowed: [1] },
+  { name: "PATCH /api/parents/setup", call: (c) => call(parentSetupPATCH, { method: "PATCH", cookies: c, body: {} }), allowed: [1] },
+
+  // ─── Students (role-dispatched resource) ───────────────────────────────────
+  { name: "GET /api/students", call: (c) => call(studentsGET, { cookies: c }), allowed: [1, 2, 3] },
+  { name: "GET /api/students/[studentId]", call: (c) => call(studentGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [1] },
+  { name: "PATCH /api/students/[studentId]", call: (c) => call(studentPATCH, { method: "PATCH", cookies: c, params: { studentId: FAKE_ID }, body: { student: { first_name: "U", last_name: "S" } } }), allowed: [3] },
+  { name: "GET /api/students/[studentId]/lessons", call: (c) => call(studentLessonsGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [2, 3] },
+  { name: "GET /api/students/[studentId]/sessions", call: (c) => call(studentSessionsGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [3] },
+  { name: "GET /api/students/[studentId]/availability", call: (c) => call(studentAvailGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [1] },
+  { name: "PUT /api/students/[studentId]/availability", call: (c) => call(studentAvailPUT, { method: "PUT", cookies: c, params: { studentId: FAKE_ID }, body: {} }), allowed: [1] },
+  { name: "GET /api/students/[studentId]/parent", call: (c) => call(studentParentGET, { cookies: c, params: { studentId: FAKE_ID } }), allowed: [2] },
+  { name: "PATCH /api/students/[studentId]/active-course", call: (c) => call(activeCoursePATCH, { method: "PATCH", cookies: c, params: { studentId: FAKE_ID }, body: { courseId: FAKE_ID } }), allowed: [1] },
 
   // ─── User / Profiles / Lesson-progress ─────────────────────────────────────
-  { name: "GET /api/user/role", call: (c) => call(userRoleGET, { cookies: c }), allowed: [] },
+  { name: "GET /api/me", call: (c) => call(userRoleGET, { cookies: c }), allowed: [] },
   // /api/profiles/select was deleted in Phase 4.5 — its sole caller (parent-without-PIN
   // branch of /profiles page) now uses the `selectProfile` server action like every
   // other branch. Covered by tests/integration/actions/selectProfile.test.ts.
@@ -205,11 +219,11 @@ const AUTH_CASES: AuthCase[] = [
   // studentId != "new" → authed branch, role [1]. Anon flows through the public branch, so 401 is not asserted here.
   { name: "POST /api/checkout", call: (c) => call(checkoutPOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID, priceId: "price_test" } }), allowed: [1], publicSubFlow: true },
 
-  // ─── Subscriptions (role [1]) ──────────────────────────────────────────────
-  { name: "POST /api/subscriptions/cancel", call: (c) => call(subCancelPOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID } }), allowed: [1] },
-  { name: "POST /api/subscriptions/resume", call: (c) => call(subResumePOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID } }), allowed: [1] },
-  { name: "POST /api/subscriptions/schedule", call: (c) => call(subSchedulePOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID, priceId: "price_test" } }), allowed: [1] },
-  { name: "POST /api/subscriptions/schedule/cancel", call: (c) => call(subScheduleCancelPOST, { method: "POST", cookies: c, body: { studentId: FAKE_ID } }), allowed: [1] },
+  // ─── Billing (role [1]) ────────────────────────────────────────────────────
+  { name: "POST /api/students/[studentId]/subscription/cancel", call: (c) => call(subCancelPOST, { method: "POST", cookies: c, params: { studentId: FAKE_ID } }), allowed: [1] },
+  { name: "POST /api/students/[studentId]/subscription/resume", call: (c) => call(subResumePOST, { method: "POST", cookies: c, params: { studentId: FAKE_ID } }), allowed: [1] },
+  { name: "POST /api/students/[studentId]/subscription/schedule", call: (c) => call(subSchedulePOST, { method: "POST", cookies: c, params: { studentId: FAKE_ID }, body: { priceId: "price_test" } }), allowed: [1] },
+  { name: "DELETE /api/students/[studentId]/subscription/schedule", call: (c) => call(subScheduleDELETE, { method: "DELETE", cookies: c, params: { studentId: FAKE_ID } }), allowed: [1] },
   { name: "GET /api/subscriptions/invoices", call: (c) => call(subInvoicesGET, { cookies: c }), allowed: [1] },
 
   // ─── Attendance (mixed) ────────────────────────────────────────────────────

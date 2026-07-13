@@ -33,7 +33,7 @@ CI runs both test suites automatically on every push and PR via `.github/workflo
 - `(protected)/` split by audience:
   - `(families)/` — student/parent-facing: `lessons`, `message`, `onboarding`, `parent`, `profiles`, `reward`, `student`. Wrapped in `ActiveProfileProvider` and `PageTitleProvider`.
   - `admin/`, `coach/` — role-specific dashboards.
-- `api/` — REST handlers grouped by audience (`admin/`, `coach/`, `parent/`, `user/`, `profiles/`, `attendance/`, `checkout/`, `subscriptions/`, `lesson-progress/`, `webhooks/{stripe,lessonspace}`).
+- `api/` — REST handlers grouped by resource, never by audience (`students/`, `coaches/`, `admins/`, `sessions/`, `courses/`, `lessons/`, `lesson-progress/`, `lesson-tasks/`, `conversations/`, `booked-slots/`, `assignments/`, `payment-plans/`, `subscriptions/`, `checkout/`, `attendance/`, `reschedule-requests/`, `lessonspace/`, `parents/`, `me/`, `webhooks/{stripe,lessonspace}`). Role gating lives inside each handler, not in the URL — see `docs/api-contract.md` ("URL & naming convention") and the role matrix in `docs/api-auth.md`. Client fetches never hard-code `/api/...` string literals: they build URLs from the central typed registry `src/lib/api/routes.ts` (`api.students.one(id)` + `apiFetch`).
 
 Route collocation conventions (underscore-prefixed = route-private, not routed by Next): `_components/`, `_hooks/`, `_context/`, `_lib/`, `_types/`, plus `actions.ts` for route-scoped server actions, and Next's standard `loading.tsx` (always renders `<PageSpinner />`). Keep `_lib/` flat while small; split into `_lib/server/`, `_lib/utils/`, etc. once a route accumulates enough helpers for the distinction to clarify ownership. Full convention also in `README.md`.
 
@@ -79,7 +79,7 @@ Business workflows live here and call into `src/services/*`. Don't reverse the d
 
 - **Signup → onboarding → payment → matchmaking** has a deliberate lazy chain: signup creates `account` + `parents` + a placeholder `students` row only; the Stripe `customer` is created lazily in `/api/checkout`; the LessonSpace room is provisioned only after `invoice.paid` fires. Sessions/coach assignment happen inside the Stripe webhook via `assignCoachToStudent()` (or from onboarding once `student_availabilities` are set and `sessions_remaining > 0`). Full flow in `docs/data-model.md` + `docs/payments-flow.md`.
 - **Matchmaking** — `assignCoachToStudent()` shuffles the student's weekly slots, generates candidate 1-hour starts on 10-min boundaries, checks the coach's and student's `booked_slots.status = "active"` rows and the `sessions` table for conflicts, then writes a `booked_slots` row as `pending` with `num_sessions` + `start_date`. **Pending slots do not block matchmaking** — only `active` does. Admin approval (`approvePendingBookedSlot`) materialises individual `sessions` rows weekly (with a hard cap of `num_sessions * 3` weeks to bound the search), flips the slot to `active`, and idempotently inserts a `coach_students` link. DST is handled by re-anchoring wall-clock time per week in the slot's timezone, not by adding UTC weeks. Algorithm in `docs/matchmaking.md`.
-- **Stripe subscriptions** support upgrade/downgrade via Stripe `SubscriptionSchedule` (`/api/subscriptions/schedule` + `setup_intent.succeeded` webhook). Two-phase schedule keeps the old plan until period end, then transitions; `pending_plan_id` + `pending_stripe_schedule_id` track it on `student_subscriptions`. Refund window is 28 days from `current_period_start` (hard-coded in `src/lib/payments/server/policies.ts`). `docs/payments-flow.md` has the full lifecycle.
+- **Stripe subscriptions** support upgrade/downgrade via Stripe `SubscriptionSchedule` (`POST /api/students/[studentId]/subscription/schedule` + `setup_intent.succeeded` webhook). Two-phase schedule keeps the old plan until period end, then transitions; `pending_plan_id` + `pending_stripe_schedule_id` track it on `student_subscriptions`. Refund window is 28 days from `current_period_start` (hard-coded in `src/lib/payments/server/policies.ts`). `docs/payments-flow.md` has the full lifecycle.
 - **LessonSpace** — student room is provisioned once with webhooks enabled (`students.webhook_room_id` is the join key). Subsequent launches just regenerate participant URLs without webhooks. Incoming webhooks at `/api/webhooks/lessonspace` look up the student by `webhook_room_id`. Layer map in `docs/lessonspace-runtime-flows.md`.
 
 ### Conventions
@@ -109,8 +109,8 @@ Response shapes:
 - Errors: `{ error: string }` with proper HTTP status code. **Never** `{ status, message }` in the body. **Never** leak `err.message` from a catch — use a generic `"Internal server error"`.
 
 Worked examples to mirror:
-- `src/app/api/subscriptions/cancel/route.ts` — Phase-3 canonical four-stage example.
-- `src/app/api/coach/lesson-progress/route.ts` — thin handler delegating to `src/lib/lessons/server/awardProgress.ts`.
+- `src/app/api/students/[studentId]/subscription/cancel/route.ts` — Phase-3 canonical four-stage example.
+- `src/app/api/lesson-progress/route.ts` — thin handler delegating to `src/lib/lessons/server/awardProgress.ts`.
 
 ### Status (2026-05-20): contract rewrite complete
 
@@ -122,7 +122,7 @@ The 6-phase rewrite (`docs/test-rewrite-runbook.md`) closed every CRITICAL audit
 - LessonSpace email recipient hardcoded to `wdstalkmaze@gmail.com` — product decision; route resolves `account.email`; flip is a one-line change in the route + the contract test.
 
 **Data integrity (needs Postgres RPC migrations to fix properly)**
-- `admin/employees/[id]/availability` PUT does DELETE-then-INSERT without transaction. Partial INSERT failure → coach has zero availability. Same shape in `admin/courses/assign` and `src/lib/lessons/server/insertLessonIntoCourse.ts`. Canonical fix: a Postgres function called via `supabase.rpc(...)`.
+- `coaches/[id]/availability` PUT does DELETE-then-INSERT without transaction. Partial INSERT failure → coach has zero availability. Same shape in `courses/[courseId]/students` (course assignment) and `src/lib/lessons/server/insertLessonIntoCourse.ts`. Canonical fix: a Postgres function called via `supabase.rpc(...)`.
 
 **Pre-existing tech debt unrelated to the contract**
 - Half-finished `coach_availabilities` / `student_availabilities` column migration: `start_time_new`/`end_time_new` coexist with legacy `start_time`/`end_time`.
@@ -144,7 +144,7 @@ The 6-phase rewrite (`docs/test-rewrite-runbook.md`) closed every CRITICAL audit
 
 Canonical (read these before editing):
 - `docs/api-contract.md` — route shape, status codes, error format. **THE spec.**
-- `docs/api-auth.md` — `requireRole`, role matrix per URL prefix.
+- `docs/api-auth.md` — `requireRole`, role matrix per resource.
 - `docs/api-ownership.md` — `assertOwns*` helpers, 404-vs-403 rule.
 
 Domain references:

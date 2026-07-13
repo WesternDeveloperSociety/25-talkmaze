@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Coach, Student } from "../_types";
+import { api, apiFetch } from "@/src/lib/api/routes";
+import type { Student } from "../_types";
 
 interface StudentProps {
   courseId: string;
@@ -15,10 +16,9 @@ export default function AssignStudentDropDown({ courseId }: StudentProps) {
   async function onStudentClick(student: Student) {
     try {
       setLoadingId(student.id);
-      const response = await fetch("/api/admin/courses/assign", {
+      const response = await apiFetch(api.courses.students(courseId), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: student.id, courseId }),
+        json: { studentId: student.id },
       });
       if (!response.ok) return;
       setSelectedStudents((prev) => {
@@ -39,7 +39,7 @@ export default function AssignStudentDropDown({ courseId }: StudentProps) {
   useEffect(() => {
     async function getStudents() {
       try {
-        const response = await fetch("/api/admin/students");
+        const response = await apiFetch(api.students.list());
         const data = await response.json();
         if (Array.isArray(data?.students)) setStudents(data.students);
         else setStudents([]);

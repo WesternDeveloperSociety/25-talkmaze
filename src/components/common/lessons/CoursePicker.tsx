@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 export interface CoursePickerOption {
   course_id: string;
@@ -12,8 +13,8 @@ interface CoursePickerProps {
   options: CoursePickerOption[];
   activeCourseId: string | null;
   /**
-   * When provided, the picker calls PATCH /api/student/active-course on
-   * change and persists the selection to the student row. Used by the
+   * When provided, the picker calls PATCH /api/students/[studentId]/active-course
+   * on change and persists the selection to the student row. Used by the
    * student-side mount points.
    *
    * When omitted, the picker only fires `onChange` — the caller is
@@ -55,10 +56,9 @@ export default function CoursePicker({
 
     setSaving(true);
     try {
-      const res = await fetch("/api/student/active-course", {
+      const res = await apiFetch(api.students.activeCourse(studentId), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId, courseId: next }),
+        json: { courseId: next },
       });
       if (!res.ok) {
         setError("Could not switch course. Please try again.");

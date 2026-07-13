@@ -6,11 +6,7 @@ import type { SessionProp } from "./types";
 import { Button } from "@/src/components/ui/button";
 import { Input } from "@/src/components/ui/input";
 import { Field, FieldError, FieldLabel } from "@/src/components/ui/field";
-import {
-  Alert,
-  AlertTitle,
-  AlertDescription,
-} from "@/src/components/ui/alert";
+import { Alert, AlertTitle, AlertDescription } from "@/src/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +17,7 @@ import {
 } from "@/src/components/ui/dialog";
 import { formatDateTime, getDurationMin } from "../_lib/sessionDateUtils";
 import { toDatetimeLocalValue } from "@/src/utils/formatDateTime";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 interface Props {
   session: SessionProp;
@@ -57,17 +54,13 @@ export default function SessionRescheduleModal({
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(
-        `/api/parent/sessions/${session.id}/reschedule-request`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            requested_start_time: new Date(startVal).toISOString(),
-            requested_end_time: new Date(endVal).toISOString(),
-          }),
+      const res = await apiFetch(api.sessions.rescheduleRequest(session.id), {
+        method: "POST",
+        json: {
+          requested_start_time: new Date(startVal).toISOString(),
+          requested_end_time: new Date(endVal).toISOString(),
         },
-      );
+      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Failed to submit request");
@@ -84,10 +77,9 @@ export default function SessionRescheduleModal({
     setSubmitting(true);
     setError("");
     try {
-      const res = await fetch(
-        `/api/parent/sessions/${session.id}/reschedule-request`,
-        { method: "DELETE" },
-      );
+      const res = await apiFetch(api.sessions.rescheduleRequest(session.id), {
+        method: "DELETE",
+      });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Failed to withdraw request");

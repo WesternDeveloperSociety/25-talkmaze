@@ -1,5 +1,7 @@
 # Deep Audit — 2026-05-20
 
+*Historical document (pre-July-2026 API refactor): route paths herein refer to the old audience-prefixed layout; see docs/api-contract.md "URL & naming convention" for the current structure.*
+
 A six-angle deep-dive run on `dev` after the contract rewrite. Complements `docs/repo-quality-audit.md` (the original baseline) with findings that audit missed. Every item below is **net-new**; nothing here repeats the original audit's CRITICAL list.
 
 Methodology: six parallel exploration agents covered security/auth, data integrity & races, frontend, performance, external integrations, and test quality. ~125 raw findings; deduped and triaged by realistic blast radius (not theoretical worst-case).

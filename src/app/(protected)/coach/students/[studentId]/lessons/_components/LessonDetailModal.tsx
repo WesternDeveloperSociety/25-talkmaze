@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/src/components/ui/select";
 import { Button } from "@/src/components/ui/button";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import { ExternalLinkIcon } from "@/src/components/ui/icons";
 import { LESSON_STATUS_OPTIONS } from "@/src/lib/lessons/lessonStatus";
 
@@ -79,14 +80,13 @@ export default function LessonDetailModal({
     setMessage(null);
     onStatusChange(lesson.lessonId, next); // optimistic
     try {
-      const res = await fetch("/api/coach/lesson-progress", {
+      const res = await apiFetch(api.lessonProgress.root(), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        json: {
           student_id: studentId,
           lesson_id: lesson.lessonId,
           status: next,
-        }),
+        },
       });
       if (!res.ok) throw new Error("Failed to update status");
       setMessage({ type: "success", text: "Progress updated." });

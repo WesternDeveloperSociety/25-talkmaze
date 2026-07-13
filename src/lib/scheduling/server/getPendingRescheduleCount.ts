@@ -12,7 +12,7 @@ import { createClient } from "@/src/services/supabase/server";
  * without extra guards.
  *
  * Seeds the coach sidebar "Requests" badge (server-rendered, no flash); the
- * badge is later refetched client-side via GET /api/coach/reschedule-requests
+ * badge is later refetched client-side via GET /api/reschedule-requests
  * (its `requests.length` is this same count).
  */
 export async function getPendingRescheduleCount(): Promise<number> {

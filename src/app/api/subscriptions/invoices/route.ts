@@ -4,10 +4,12 @@ import { requireRole } from "@/src/lib/auth/server/requireRole";
 import { listInvoicesForAccount } from "@/src/lib/payments/server/listInvoicesForAccount";
 import { stripeErrorStatus } from "@/src/lib/payments/server/stripeErrorStatus";
 
-const QuerySchema = z.object({
-  limit: z.coerce.number().int().min(1).max(100).default(10),
-  startingAfter: z.string().startsWith("in_").optional(),
-});
+const QuerySchema = z
+  .object({
+    limit: z.coerce.number().int().min(1).max(100).default(10),
+    startingAfter: z.string().startsWith("in_").optional(),
+  })
+  .strict();
 
 /**
  * GET /api/subscriptions/invoices

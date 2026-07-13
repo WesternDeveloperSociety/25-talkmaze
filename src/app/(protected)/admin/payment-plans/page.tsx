@@ -9,6 +9,7 @@ import PlanDetailPanel from "./_components/PlanDetailPanel";
 import CreatePlanModal from "./_components/CreatePlanModal";
 import { useAdminMobileDetail } from "../_context/AdminMobileDetailContext";
 import type { AdminPlan } from "./_types";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 const inputClass =
   "w-full bg-[#1F2E3B] border border-white/8 text-white placeholder:text-white/25 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[#B1E7D6]/40 transition-colors";
@@ -29,7 +30,7 @@ export default function PaymentPlansPage() {
     async function fetchPlans() {
       try {
         setLoading(true);
-        const res = await fetch("/api/admin/payment-plans");
+        const res = await apiFetch(api.paymentPlans.list());
         if (!res.ok) throw new Error();
         const data = await res.json();
         setPlans(Array.isArray(data?.plans) ? data.plans : []);

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import { fullName } from "@/src/utils/formatName";
 import { fmtLocalDate } from "@/src/utils/formatDateTime";
 import type { CoachCourseListItem } from "./types";
@@ -54,10 +55,9 @@ export default function AssignCourseModal({
     setInlineError(null);
     setAssigningCourseId(course.id);
     try {
-      const res = await fetch("/api/coach/courses/assign", {
+      const res = await apiFetch(api.courses.students(course.id), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: student.id, courseId: course.id }),
+        json: { studentId: student.id },
       });
 
       if (!res.ok) {
@@ -86,10 +86,8 @@ export default function AssignCourseModal({
     setInlineError(null);
     setUnassigningCourseId(course.id);
     try {
-      const res = await fetch("/api/coach/courses/assign", {
+      const res = await apiFetch(api.courses.student(course.id, student.id), {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId: student.id, courseId: course.id }),
       });
 
       if (!res.ok) {

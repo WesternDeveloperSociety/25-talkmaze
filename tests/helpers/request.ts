@@ -3,7 +3,12 @@ import { nextCookies } from "@tests/helpers/nextHeadersMock";
 
 type RouteHandler = (
   req: NextRequest,
-  ctx: { params: Promise<Record<string, string>> },
+  // Route handlers declare their own `params` shape (e.g. Promise<{ courseId:
+  // string }>), which is narrower than Record<string, string> and would make
+  // every typed handler unassignable here. `any` keeps them assignable; the
+  // runtime value is always the Record<string, string> from CallOptions.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ctx: { params: Promise<any> },
 ) => Promise<NextResponse> | NextResponse;
 
 interface CallOptions {

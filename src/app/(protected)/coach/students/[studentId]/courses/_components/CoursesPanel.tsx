@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import AssignCourseModal from "./AssignCourseModal";
 import type { CoachCourseListItem } from "./types";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import { Button } from "@/src/components/ui/button";
 import { Card } from "@/src/components/ui/card";
 import type { Database } from "@/src/services/supabase/types/database";
@@ -27,7 +28,7 @@ export default function CoursesPanel({ student }: { student: Student }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/coach/courses?student_id=${student.id}`);
+      const res = await apiFetch(api.courses.list({ student_id: student.id }));
       if (!res.ok) throw new Error("Failed to load courses");
       const data = await res.json();
       setCourses(

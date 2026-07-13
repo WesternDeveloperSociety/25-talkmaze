@@ -22,6 +22,7 @@ import Spinner from "@/src/components/ui/Spinner";
 import { cn } from "@/src/utils/cn";
 import { formatMoney } from "@/src/utils/formatMoney";
 import type { InvoiceDTO } from "@/src/lib/payments/server/listInvoicesForAccount";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import { invoiceStatusBadge } from "./invoiceStatusBadge";
 
 const PAGE_SIZE = 10;
@@ -66,8 +67,8 @@ export function BillingHistory({ className }: { className?: string }) {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const res = await fetch(
-        `/api/subscriptions/invoices?limit=${PAGE_SIZE}`,
+      const res = await apiFetch(
+        api.subscriptions.invoices({ limit: PAGE_SIZE }),
         { signal: controller.signal },
       );
       if (res.status === 401) {
@@ -95,13 +96,10 @@ export function BillingHistory({ className }: { className?: string }) {
     const controller = new AbortController();
     abortRef.current = controller;
     try {
-      const params = new URLSearchParams({
-        limit: String(PAGE_SIZE),
-        startingAfter: cursor,
-      });
-      const res = await fetch(`/api/subscriptions/invoices?${params}`, {
-        signal: controller.signal,
-      });
+      const res = await apiFetch(
+        api.subscriptions.invoices({ limit: PAGE_SIZE, startingAfter: cursor }),
+        { signal: controller.signal },
+      );
       if (!res.ok) return; // keep the rows already shown
       const data: InvoicesResponse = await res.json();
       setInvoices((prev) => [...prev, ...data.invoices]);

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/src/services/supabase/client";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import CourseLessonsPanel from "./CourseLessonPanel";
 import type { Course } from "@/src/lib/lessons/types";
 import type { Student } from "../../_types";
@@ -51,10 +52,9 @@ export default function CourseDetailModal({ course, students, onClose, onUpdate,
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/admin/courses/${course.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ course: editForm }),
+      const response = await apiFetch(api.courses.one(course.id), {
+        method: "PATCH",
+        json: { course: editForm },
       });
       if (!response.ok) throw new Error("Failed to update course");
       const updated = await response.json();
@@ -72,7 +72,7 @@ export default function CourseDetailModal({ course, students, onClose, onUpdate,
     if (!confirm(`Delete "${course.name}"? This cannot be undone.`)) return;
     setIsDeleting(true);
     try {
-      const response = await fetch(`/api/admin/courses/${course.id}`, { method: "DELETE" });
+      const response = await apiFetch(api.courses.one(course.id), { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to delete course");
       onDelete();
     } catch (err) {

@@ -8,8 +8,8 @@ type Result =
 /**
  * Resolves the `parents.id` for a student via the shared family `account_id`.
  *
- * Used by both /api/parent/students/[studentId] (parent looks up themselves)
- * and /api/coach/students/[studentId]/parent (coach looks up the family
+ * Used by both GET /api/students/[studentId] (parent looks up themselves)
+ * and GET /api/students/[studentId]/parent (coach looks up the family
  * contact for messaging). The two routes share this helper but apply
  * different auth gates.
  */

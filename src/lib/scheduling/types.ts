@@ -89,7 +89,7 @@ export type PreviewCalendarEvent = {
   | { daysOfWeek: number[]; startTime: string; endTime: string } // weekly recurrence (HH:mm)
 );
 
-/** Response body of POST /api/admin/pending-bookings/[id]/preview. */
+/** Response body of POST /api/booked-slots/[id]/preview. */
 export type PendingBookingPreviewPayload = {
   events: PreviewCalendarEvent[];
   conflicts: { start: string; end: string; reason: string }[];

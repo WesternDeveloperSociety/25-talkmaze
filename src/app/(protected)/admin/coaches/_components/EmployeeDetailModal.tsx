@@ -1,16 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import type { Coach } from "../../_types";
 
 type Availability = Record<string, { start: string; end: string }[]>;
 
 const DAY_MAP: Record<number, string> = {
-  0: "Sunday", 1: "Monday", 2: "Tuesday", 3: "Wednesday",
-  4: "Thursday", 5: "Friday", 6: "Saturday",
+  0: "Sunday",
+  1: "Monday",
+  2: "Tuesday",
+  3: "Wednesday",
+  4: "Thursday",
+  5: "Friday",
+  6: "Saturday",
 };
 
-const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const DAYS = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
 
 interface Props {
   employee: Coach;
@@ -21,23 +35,30 @@ interface Props {
 const inputClass =
   "mt-1 block w-full bg-[#2B4257] border border-white/10 text-white placeholder:text-white/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#B1E7D6]/50 transition-colors";
 
-const labelClass = "block text-[10px] font-semibold text-[#B1E7D6] uppercase tracking-widest mb-0.5";
+const labelClass =
+  "block text-[10px] font-semibold text-[#B1E7D6] uppercase tracking-widest mb-0.5";
 
-export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Props) {
+export default function EmployeeDetailModal({
+  employee,
+  onClose,
+  onUpdate,
+}: Props) {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Coach>>({});
   const [isSaving, setIsSaving] = useState(false);
   const [availability, setAvailability] = useState<Availability>({});
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onClose]);
 
   useEffect(() => {
     async function fetchAvailability() {
-      const res = await fetch(`/api/admin/employees/${employee.id}/availability`);
+      const res = await apiFetch(api.coaches.availability(employee.id));
       if (!res.ok) return;
       const body = await res.json();
       const rows: { weekday: number; start_time: string; end_time: string }[] =
@@ -58,10 +79,9 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/admin/employees/${employee.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ employee: editForm }),
+      const response = await apiFetch(api.coaches.update(employee.id), {
+        method: "PATCH",
+        json: { employee: editForm },
       });
       if (!response.ok) throw new Error("Failed to update employee");
       const updated = await response.json();
@@ -76,27 +96,41 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
   };
 
   const handleSaveAvailability = async () => {
-    const res = await fetch(`/api/admin/employees/${employee.id}/availability`, {
+    const res = await apiFetch(api.coaches.availability(employee.id), {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ availability }),
+      json: { availability },
     });
-    if (!res.ok) { alert("Failed to save availability"); return; }
+    if (!res.ok) {
+      alert("Failed to save availability");
+      return;
+    }
     alert("Availability saved!");
   };
 
-  const Field = ({ label, fieldKey, colSpan = "" }: { label: string; fieldKey: keyof Coach; colSpan?: string }) => (
+  const Field = ({
+    label,
+    fieldKey,
+    colSpan = "",
+  }: {
+    label: string;
+    fieldKey: keyof Coach;
+    colSpan?: string;
+  }) => (
     <div className={colSpan}>
       <p className={labelClass}>{label}</p>
       {isEditing ? (
         <input
           type="text"
           value={(editForm[fieldKey] as string) ?? ""}
-          onChange={(e) => setEditForm((p) => ({ ...p, [fieldKey]: e.target.value }))}
+          onChange={(e) =>
+            setEditForm((p) => ({ ...p, [fieldKey]: e.target.value }))
+          }
           className={inputClass}
         />
       ) : (
-        <p className="text-white text-sm font-medium">{(employee[fieldKey] as string) || "—"}</p>
+        <p className="text-white text-sm font-medium">
+          {(employee[fieldKey] as string) || "—"}
+        </p>
       )}
     </div>
   );
@@ -118,13 +152,18 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
                 ? `${(editForm as any).first_name ?? employee.first_name} ${(editForm as any).last_name ?? employee.last_name}`
                 : `${employee.first_name} ${employee.last_name}`}
             </h2>
-            <p className="text-[#B1E7D6] text-xs opacity-60 mt-0.5">Coach profile</p>
+            <p className="text-[#B1E7D6] text-xs opacity-60 mt-0.5">
+              Coach profile
+            </p>
           </div>
           <div className="flex items-center gap-2">
             {!isEditing ? (
               <>
                 <button
-                  onClick={() => { setEditForm({ ...employee }); setIsEditing(true); }}
+                  onClick={() => {
+                    setEditForm({ ...employee });
+                    setIsEditing(true);
+                  }}
                   className="min-h-[44px] md:min-h-0 px-4 py-1.5 text-xs font-semibold text-[#1F2E3B] bg-[#B1E7D6] hover:bg-[#9ed4c1] rounded-lg transition-colors"
                 >
                   Edit
@@ -146,7 +185,10 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
                   {isSaving ? "Saving…" : "Save"}
                 </button>
                 <button
-                  onClick={() => { setEditForm({}); setIsEditing(false); }}
+                  onClick={() => {
+                    setEditForm({});
+                    setIsEditing(false);
+                  }}
                   className="min-h-[44px] md:min-h-0 px-4 py-1.5 text-xs font-semibold text-white/70 bg-white/10 hover:bg-white/15 rounded-lg transition-colors"
                 >
                   Cancel
@@ -169,7 +211,9 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
               </div>
               <div>
                 <p className={labelClass}>Account ID</p>
-                <p className="text-white/80 text-sm font-mono">{employee.account_id}</p>
+                <p className="text-white/80 text-sm font-mono">
+                  {employee.account_id}
+                </p>
               </div>
               <Field label="First Name" fieldKey="first_name" />
               <Field label="Last Name" fieldKey="last_name" />
@@ -184,11 +228,15 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className={labelClass}>Created At</p>
-                <p className="text-white/60 text-sm">{employee.created_at || "—"}</p>
+                <p className="text-white/60 text-sm">
+                  {employee.created_at || "—"}
+                </p>
               </div>
               <div>
                 <p className={labelClass}>Updated At</p>
-                <p className="text-white/60 text-sm">{employee.updated_at || "—"}</p>
+                <p className="text-white/60 text-sm">
+                  {employee.updated_at || "—"}
+                </p>
               </div>
             </div>
           </section>
@@ -212,9 +260,14 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
                 const enabled = !!availability[day];
                 const slots = availability[day] || [];
                 return (
-                  <div key={day} className={`rounded-xl p-3 border transition-colors ${enabled ? "bg-[#2B4257]/60 border-[#B1E7D6]/20" : "bg-[#2B4257]/20 border-white/5"}`}>
+                  <div
+                    key={day}
+                    className={`rounded-xl p-3 border transition-colors ${enabled ? "bg-[#2B4257]/60 border-[#B1E7D6]/20" : "bg-[#2B4257]/20 border-white/5"}`}
+                  >
                     <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-white">{day}</span>
+                      <span className="text-sm font-medium text-white">
+                        {day}
+                      </span>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input
                           type="checkbox"
@@ -244,7 +297,10 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
                               onChange={(e) =>
                                 setAvailability((prev) => {
                                   const updated = [...prev[day]];
-                                  updated[idx] = { ...updated[idx], start: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    start: e.target.value,
+                                  };
                                   return { ...prev, [day]: updated };
                                 })
                               }
@@ -257,7 +313,10 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
                               onChange={(e) =>
                                 setAvailability((prev) => {
                                   const updated = [...prev[day]];
-                                  updated[idx] = { ...updated[idx], end: e.target.value };
+                                  updated[idx] = {
+                                    ...updated[idx],
+                                    end: e.target.value,
+                                  };
                                   return { ...prev, [day]: updated };
                                 })
                               }
@@ -267,7 +326,9 @@ export default function EmployeeDetailModal({ employee, onClose, onUpdate }: Pro
                               type="button"
                               onClick={() =>
                                 setAvailability((prev) => {
-                                  const filtered = prev[day].filter((_, i) => i !== idx);
+                                  const filtered = prev[day].filter(
+                                    (_, i) => i !== idx,
+                                  );
                                   const copy = { ...prev };
                                   if (filtered.length === 0) delete copy[day];
                                   else copy[day] = filtered;

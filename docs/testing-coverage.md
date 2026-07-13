@@ -1,6 +1,6 @@
 # Testing Coverage
 
-Current state of the test suite **as of 2026-05-20**, post-contract-rewrite. For the rewrite history see `docs/test-rewrite-runbook.md`.
+Current state of the test suite **as of 2026-05-20**, post-contract-rewrite. For the rewrite history see `docs/test-rewrite-runbook.md`. (Test-file locations below reflect the July-2026 resource-oriented API refactor — files under `tests/integration/api/` now mirror the resource-grouped route tree; the headline counts predate it.)
 
 ---
 
@@ -27,16 +27,18 @@ tests/
 │   ├── scheduling/          # matchmaking algorithm (timezone, DST, conflicts)
 │   └── utils/               # formatDateTime, formatName
 ├── integration/             # Real Supabase, real GoTrue. ~2-3 min. Run with npm run test:integration.
-│   ├── _auth-matrix.test.ts # Role gates for every route in src/app/api/**
 │   ├── actions/             # Server-action tests (selectProfile, sendMessage, getLessonSpace)
-│   ├── api/                 # Per-route contract tests grouped by route group
-│   │   ├── admin/
+│   ├── api/                 # Per-route contract tests grouped by resource (mirrors src/app/api/**)
+│   │   ├── _auth-matrix.test.ts   # Role gates for every route in src/app/api/**
 │   │   ├── attendance/
 │   │   ├── checkout/
-│   │   ├── coach/
-│   │   ├── lesson-progress.test.ts
-│   │   ├── parent/
-│   │   └── subscriptions/
+│   │   ├── coaches/
+│   │   ├── conversations/
+│   │   ├── courses/
+│   │   ├── sessions/
+│   │   ├── students/        # incl. students/subscription/ (billing actions)
+│   │   ├── subscriptions/   # invoices
+│   │   └── *.test.ts        # single-file resources: lessons, lesson-tasks, lesson-progress(.patch/.feedback), lessonspace-rooms, parents-setup
 │   ├── middleware/          # redirects.test.ts — covers updateSession + RBAC + profile gate
 │   └── sanity/              # resetAll helper sanity
 ├── contract/
@@ -71,17 +73,20 @@ Q4 — What does it persist? (DB side-effect assertions via expectRowExists / ex
 Q5 — What external calls?  (Stripe / LessonSpace / Resend args asserted with mocks/spies)
 ```
 
-Coverage by domain (post-rewrite):
+Coverage by resource (post-refactor layout; phase labels refer to the original rewrite):
 
-| Domain | Files | Notes |
+| Resource | Files | Notes |
 |---|---|---|
-| `subscriptions` | 4 (cancel, resume, schedule, schedule/cancel) | Phase 3 worked example; the canonical reference shape |
-| `coach` | 9 (lessonspace, lesson-feedback, lesson-progress, lessons, conversation, conversation-message, sessions, sessions-by-id, lesson-tasks) | Phase 4.2 |
-| `parent` | 4 (students, availability, setup, sessions via the matrix) | Phase 4.3 |
+| `students/subscription` | 4 (cancel, resume, schedule.post, schedule.delete) | Phase 3 worked example; the canonical reference shape |
+| `students` | 5 (one.get, availability, lessons.get, parent.get, sessions.get) | Phases 4.2–4.3 |
+| `sessions` | 2 (list — role-dispatched GET, one.patch) | Phase 4.2 |
+| `coaches` | 1 (sessions.get — admin coach calendar) | Post-rewrite addition (PR #112) |
+| `conversations` | 2 (create, messages.get) | Phase 4.2 |
+| `courses` | 3 (list — role-dispatched GET, students.post admin + coach legs) | Phases 4.2/4.4 |
 | `attendance` | 1 (GET/POST/DELETE in one file — mixed-actor route) | Phase 4.3 |
 | `checkout` | 1 | Phase 4.3; security regressions (no password to console / metadata / response) |
-| `admin` | 1 (courses-assign full 5Q) + matrix coverage for the rest | Phase 4.4 |
-| `lesson-progress` (top-level) | 1 | Phase 4.3 |
+| `subscriptions` | 1 (invoices) | Post-rewrite addition (PR #110) |
+| top-level files | 7 (lessons, lesson-tasks, lesson-progress, lesson-progress.patch, lesson-progress.feedback, lessonspace-rooms, parents-setup) | Phases 4.2–4.3 |
 
 ---
 
@@ -172,7 +177,7 @@ npm run test:unit -- --watch   # watch mode for unit tests
 
 To run a single file (faster iteration):
 ```bash
-npm run test:integration -- tests/integration/api/coach/lesson-progress.test.ts
+npm run test:integration -- tests/integration/api/lesson-progress.patch.test.ts
 ```
 
 ---
@@ -219,7 +224,7 @@ vi.mock("server-only", () => ({}));
 ## Reference
 
 - `docs/api-contract.md` — route shape, status codes, error format (THE spec)
-- `docs/api-auth.md` — `requireRole`, role matrix per URL prefix
+- `docs/api-auth.md` — `requireRole`, role matrix per resource
 - `docs/api-ownership.md` — `assertOwns*` helpers, 404-vs-403 rule
 - `docs/test-rewrite-runbook.md` — phased plan + decision log (closed; preserved for the 5Q + matrix templates)
 - `docs/repo-quality-audit.md` — audit findings (mostly resolved; residuals documented inline)

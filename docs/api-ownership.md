@@ -98,7 +98,7 @@ export async function assertCoachAssignedToStudent(
 
 ### `assertCoachOwnsConversation`
 
-For `coach/conversation/message`-style routes. The conversation already encodes the (coach, profile) pair, so the check is direct.
+For `GET /api/conversations/[id]/messages`-style routes. The conversation already encodes the (coach, profile) pair, so the check is direct.
 
 ```ts
 export async function assertCoachOwnsConversation(
@@ -166,7 +166,7 @@ When a caller asks for a resource they don't own, the route can return either `4
 The default in this repo: **`404` for "doesn't exist," `403` for "exists but not yours."** Two reasons:
 
 1. Honest semantics. A `403` is the truthful answer to "you can't have this."
-2. The audit calls out the parent-students route specifically for returning `200` with `{ status: 404 }` in the body. Fixing that to a real `404` is the obvious next step; making it `403` for "exists but not yours" is the obvious step after.
+2. The audit called out the old parent-students route (now `GET /api/students/[studentId]`) specifically for returning `200` with `{ status: 404 }` in the body. Fixing that to a real `404` was the obvious next step; making it `403` for "exists but not yours" the obvious step after.
 
 **The exception**: routes where IDs are sequential, guessable, or otherwise enumerable. None today (everything is UUIDs), but if a future route exposes an integer ID (`sessions.id` is `bigint`, for example), use `404` for both cases and add a comment:
 
@@ -189,30 +189,32 @@ Every route that has a resource ID in its path, query, or body needs an ownershi
 
 | Route | Resource | Check |
 |---|---|---|
-| `GET /api/parent/students/[studentId]` | student | `assertOwnsStudent` |
-| `GET /api/parent/students/[studentId]/availability` | student | `assertOwnsStudent` |
-| `PUT /api/parent/students/[studentId]/availability` | student | `assertOwnsStudent` |
-| `PATCH /api/parent/setup` | own account | implicit (mutates `user.id`'s own rows) |
+| `GET /api/students/[studentId]` | student | `assertOwnsStudent` |
+| `GET /api/students/[studentId]/availability` | student | `assertOwnsStudent` |
+| `PUT /api/students/[studentId]/availability` | student | `assertOwnsStudent` |
+| `PATCH /api/students/[studentId]/active-course` | student | `assertOwnsStudent` |
+| `PATCH /api/parents/setup` | own account | implicit (mutates `user.id`'s own rows) |
 | `POST /api/checkout` (studentId !== "new") | student | `assertOwnsStudent` |
-| `POST /api/subscriptions/cancel` | subscription via student | `resolveStudentIdForBilling` |
-| `POST /api/subscriptions/resume` | subscription via student | `resolveStudentIdForBilling` |
-| `POST /api/subscriptions/schedule` | subscription via student | `resolveStudentIdForBilling` |
-| `POST /api/subscriptions/schedule/cancel` | subscription via student | `resolveStudentIdForBilling` |
+| `POST /api/students/[studentId]/subscription/cancel` | subscription via student | `resolveStudentIdForBilling` |
+| `POST /api/students/[studentId]/subscription/resume` | subscription via student | `resolveStudentIdForBilling` |
+| `POST /api/students/[studentId]/subscription/schedule` | subscription via student | `resolveStudentIdForBilling` |
+| `DELETE /api/students/[studentId]/subscription/schedule` | subscription via student | `resolveStudentIdForBilling` |
 
 ### Coach-facing (role 2)
 
 | Route | Resource | Check |
 |---|---|---|
-| `PATCH /api/coach/lesson-feedback` | student via body | `assertCoachAssignedToStudent(body.student_id)` |
-| `PATCH /api/coach/lesson-progress` | student via body | `assertCoachAssignedToStudent(body.student_id)` |
-| `PATCH /api/coach/lesson-tasks` | student via FormData | `assertCoachAssignedToStudent(form.student_id)` |
-| `GET /api/coach/lessons` | student via query | `assertCoachAssignedToStudent(query.studentId)` |
-| `GET /api/coach/sessions` | self-scoped — filter by `coach_id` from session | none, but query MUST filter |
-| `GET /api/coach/sessions?student_id=X` | student via query | `assertCoachAssignedToStudent(query.student_id)` OR return empty (see "scope" below) |
-| `PATCH /api/coach/sessions/[id]` | session | `assertCoachOwnsSession(params.id)` |
-| `GET /api/coach/conversation` | contact via query | `assertCoachAssignedToStudent(query.contactId)` |
-| `GET /api/coach/conversation/message` | conversation | `assertCoachOwnsConversation(query.conversationId)` |
-| `GET /api/coach/lessonspace/[coachId]/[studentId]` | student | `assertCoachAssignedToStudent(params.studentId)` AND `params.coachId === user.id` |
+| `PATCH /api/lesson-progress/feedback` | student via body | `assertCoachAssignedToStudent(body.student_id)` |
+| `PATCH /api/lesson-progress` | student via body | `assertCoachAssignedToStudent(body.student_id)` |
+| `PATCH /api/lesson-tasks` | student via FormData | `assertCoachAssignedToStudent(form.student_id)` |
+| `GET /api/lessons` | student via query | `assertCoachAssignedToStudent(query.studentId)` |
+| `GET /api/sessions` (coach leg) | self-scoped — filter by `coach_id` from session | none, but query MUST filter |
+| `GET /api/sessions?student_id=X` (coach leg) | student via query | `assertCoachAssignedToStudent(query.student_id)` OR return empty (see "scope" below) |
+| `PATCH /api/sessions/[id]` | session | `assertCoachOwnsSession(params.id)` |
+| `POST /api/conversations` | contact via body | `assertCoachAssignedToStudent(body.contactId)` |
+| `GET /api/conversations/[id]/messages` | conversation | `assertCoachOwnsConversation(params.id)` |
+| `GET /api/students/[studentId]/parent` | student | `assertCoachAssignedToStudent(params.studentId)` |
+| `GET /api/lessonspace/rooms/[studentId]` | student | `assertCoachAssignedToStudent(params.studentId)` |
 | `POST /api/attendance` | student via body | `assertCoachAssignedToStudent(body.student_id)` |
 | `DELETE /api/attendance` | student via body | `assertCoachAssignedToStudent(body.student_id)` |
 | `GET /api/attendance` | student via query | family OR assigned coach (see "mixed-actor" below) |
@@ -244,26 +246,26 @@ Today's route does *neither* check (audit: "GET ownership — different family c
 
 ## Routes that need ownership fixes (audit-mapped)
 
-These are the routes currently missing ownership checks, drawn from `docs/repo-quality-audit.md`. Each will turn an existing RED integration test GREEN when fixed.
+These are the routes that were missing ownership checks when the audit ran, drawn from `docs/repo-quality-audit.md`. All were fixed during the contract rewrite; they are listed here by their **current** resource-oriented paths (the audit predates the July-2026 route refactor).
 
 **Coach routes (no `coach_students` check):**
-- `PATCH /api/coach/lesson-feedback`
-- `PATCH /api/coach/lesson-progress`
-- `PATCH /api/coach/lesson-tasks`
-- `GET /api/coach/lessons`
-- `GET /api/coach/conversation`
-- `GET /api/coach/conversation/message`
-- `GET /api/coach/lessonspace/[coachId]/[studentId]` — *also* missing role check
+- `PATCH /api/lesson-progress/feedback`
+- `PATCH /api/lesson-progress`
+- `PATCH /api/lesson-tasks`
+- `GET /api/lessons`
+- `POST /api/conversations`
+- `GET /api/conversations/[id]/messages`
+- `GET /api/lessonspace/rooms/[studentId]` — *also* missing role check
 
 **Parent routes (no `students.account_id` check):**
-- `GET /api/parent/students/[studentId]` — returns 200 with status-in-body 404, audit-flagged
+- `GET /api/students/[studentId]` — returned 200 with status-in-body 404, audit-flagged
 
 **Attendance:**
 - `GET /api/attendance` — no family/coach ownership
 - `POST /api/attendance` — no coach assignment check
 - `DELETE /api/attendance` — no coach assignment check
 
-When you fix any of these, the audit-driven test in `tests/integration/api/coach/ownership.test.ts` or the corresponding family test turns from RED to GREEN. That's the regression net.
+Fixing each of these turned an audit-driven RED integration test GREEN (the assertions now live in the per-route 5-question test files under `tests/integration/api/`). That's the regression net.
 
 ---
 
@@ -278,9 +280,9 @@ const link = await createTeacherLink({ coachAccountId: coachId, studentId });
 // — coachId could be anyone's; no check that user.id === coachId.
 ```
 
-This is `src/app/api/coach/lessonspace/[coachId]/[studentId]/route.ts` today. The route takes a coach ID from the URL and treats it as the calling coach's ID. Any user can mint a LessonSpace teacher link for any coach/student pair.
+This was the pre-refactor `coach/lessonspace/[coachId]/[studentId]` route (now `GET /api/lessonspace/rooms/[studentId]`). It took a coach ID from the URL and treated it as the calling coach's ID — any user could mint a LessonSpace teacher link for any coach/student pair.
 
-**Fix.** Don't trust URL params for identity. Use the auth context. If the route exposes a `coachId` in the path for historical reasons, *verify* it matches `user.id`:
+**Fix.** Don't trust URL params for identity. Use the auth context. If a route exposes a `coachId` in the path for historical reasons, *verify* it matches `user.id`:
 
 ```ts
 const auth = await requireRole([2]);
@@ -293,7 +295,7 @@ const ownership = await assertCoachAssignedToStudent(auth, studentId);
 if (ownership instanceof Response) return ownership;
 ```
 
-Better: drop `coachId` from the path entirely; the auth context already knows who the coach is.
+Better: drop `coachId` from the path entirely; the auth context already knows who the coach is. That is what the current route does — `GET /api/lessonspace/rooms/[studentId]` has no `coachId` segment.
 
 ### Filter-only "scoping" without explicit ownership check
 
@@ -305,7 +307,7 @@ const sessions = await supabase.from("sessions")
   .eq("student_id", query.student_id);  // optional filter
 ```
 
-This is `coach/sessions/route.ts` today. It scopes by `coach_id` correctly, so a coach can't see another coach's sessions. But if the route adds a `?student_id=X` filter, it returns an empty array when `X` belongs to another coach — silently. A test that asserts "200 + empty array" (which `ownership.test.ts:272-282` does) misses the case where the coach is genuinely unaware they're querying outside their scope.
+This is the coach leg of `GET /api/sessions` (`src/app/api/sessions/route.ts`) today. It scopes by `coach_id` correctly, so a coach can't see another coach's sessions. But when the route applies the `?student_id=X` filter, it returns an empty array when `X` belongs to another coach — silently. A test that asserts "200 + empty array" (which `ownership.test.ts:272-282` does) misses the case where the coach is genuinely unaware they're querying outside their scope.
 
 Two acceptable resolutions:
 1. **Hard fail.** When `student_id` is provided, `assertCoachAssignedToStudent` first. Foreign student → `403`.
@@ -328,7 +330,7 @@ If `student_id` was sourced from the request body, both writes need the ownershi
 ## Migration sequencing
 
 1. **Build the helpers.** `src/lib/auth/server/requireRole.ts` and `src/lib/auth/server/ownership.ts`. ~80 lines total. Unit-testable.
-2. **Apply to `subscriptions/*` as the template.** Already has `resolveStudentIdForBilling`; wrap with `requireRole`. Rewrite the test file (see Step 2 in the rollout plan).
+2. **Apply to the subscription actions (`students/[studentId]/subscription/*`) as the template.** Already has `resolveStudentIdForBilling`; wrap with `requireRole`. Rewrite the test file (see Step 2 in the rollout plan).
 3. **Apply to the audit's critical-list routes.** Each fix flips RED tests to GREEN; the count drops visibly per PR.
 4. **Sweep the rest.** Routes that already auth correctly need only the helper substitution. Routes that don't need both `requireRole` and an ownership helper added.
 

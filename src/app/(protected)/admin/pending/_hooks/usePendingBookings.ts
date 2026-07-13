@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import type {
   PendingBooking,
   PendingBookingForm,
@@ -76,10 +77,12 @@ export function usePendingBookings() {
   const fetchPendingBookings = async () => {
     try {
       setPendingBookingsLoading(true);
-      const res = await fetch("/api/admin/pending-bookings");
+      const res = await apiFetch(api.bookedSlots.list({ status: "pending" }));
       if (!res.ok) throw new Error();
       const data = await res.json();
-      const bookings = Array.isArray(data?.pending) ? data.pending : [];
+      const bookings = Array.isArray(data?.booked_slots)
+        ? data.booked_slots
+        : [];
       setPendingBookings(bookings);
       setCurrentPage(1);
       // Keep the current selection if it's still in the list.
@@ -95,7 +98,7 @@ export function usePendingBookings() {
 
   useEffect(() => {
     fetchPendingBookings();
-    fetch("/api/admin/employees")
+    apiFetch(api.coaches.list())
       .then((r) => r.json())
       .then((d) => setEmployees(Array.isArray(d?.employees) ? d.employees : []))
       .catch(() => {});
@@ -161,12 +164,11 @@ export function usePendingBookings() {
       setPendingPreviewLoading(true);
       setPendingPreviewError("");
       try {
-        const res = await fetch(
-          `/api/admin/pending-bookings/${selectedPendingBooking!.id}/preview`,
+        const res = await apiFetch(
+          api.bookedSlots.preview(selectedPendingBooking!.id),
           {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(selectedPendingBookingForm),
+            json: selectedPendingBookingForm,
           },
         );
         const data = await res.json();
@@ -197,12 +199,9 @@ export function usePendingBookings() {
    */
   const handleApprovePendingBooking = async (bookingId: string) => {
     setApprovingBookingId(bookingId);
-    const res = await fetch(
-      `/api/admin/pending-bookings/${bookingId}/approve`,
-      {
-        method: "POST",
-      },
-    );
+    const res = await apiFetch(api.bookedSlots.approve(bookingId), {
+      method: "POST",
+    });
     const data = await res.json().catch(() => ({}));
     setApprovingBookingId(null);
     if (!res.ok) {
@@ -257,10 +256,9 @@ export function usePendingBookings() {
   const handleSavePendingBooking = async (bookingId: string) => {
     if (!editingBookingForm) return;
     setSavingBookingId(bookingId);
-    const res = await fetch(`/api/admin/pending-bookings/${bookingId}`, {
+    const res = await apiFetch(api.bookedSlots.update(bookingId), {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editingBookingForm),
+      json: editingBookingForm,
     });
     const data = await res.json().catch(() => ({}));
     setSavingBookingId(null);
@@ -270,7 +268,7 @@ export function usePendingBookings() {
     }
     // Replace the stale record in the list with the updated one returned by the API.
     setPendingBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? data : b)),
+      prev.map((b) => (b.id === bookingId ? data.booked_slot : b)),
     );
     cancelEditingPendingBooking();
   };

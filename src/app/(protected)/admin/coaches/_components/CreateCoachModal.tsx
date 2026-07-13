@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 interface CreateCoachModalProps {
   isOpen: boolean;
@@ -6,7 +7,11 @@ interface CreateCoachModalProps {
   onSuccess: () => void;
 }
 
-export default function CreateCoachModal({ isOpen, onClose, onSuccess }: CreateCoachModalProps) {
+export default function CreateCoachModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: CreateCoachModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -22,12 +27,9 @@ export default function CreateCoachModal({ isOpen, onClose, onSuccess }: CreateC
     setLoading(true);
 
     try {
-      const response = await fetch("/api/admin/create-coach", {
+      const response = await apiFetch(api.coaches.create(), {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password, firstName, lastName }),
+        json: { email, password, firstName, lastName },
       });
 
       const data = await response.json();
@@ -71,7 +73,9 @@ export default function CreateCoachModal({ isOpen, onClose, onSuccess }: CreateC
         onClick={(e) => e.stopPropagation()}
       >
         <div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-          <h2 className="text-lg font-bold text-gray-900">Create Coach Account</h2>
+          <h2 className="text-lg font-bold text-gray-900">
+            Create Coach Account
+          </h2>
           <button
             onClick={handleClose}
             disabled={loading}
@@ -80,7 +84,7 @@ export default function CreateCoachModal({ isOpen, onClose, onSuccess }: CreateC
             ×
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded text-sm">
@@ -90,7 +94,10 @@ export default function CreateCoachModal({ isOpen, onClose, onSuccess }: CreateC
 
           <div className="flex gap-4">
             <div className="flex-1">
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 First Name
               </label>
               <input
@@ -104,9 +111,12 @@ export default function CreateCoachModal({ isOpen, onClose, onSuccess }: CreateC
                 placeholder="First"
               />
             </div>
-            
+
             <div className="flex-1">
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Last Name
               </label>
               <input
@@ -123,7 +133,10 @@ export default function CreateCoachModal({ isOpen, onClose, onSuccess }: CreateC
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Email
             </label>
             <input
@@ -139,7 +152,10 @@ export default function CreateCoachModal({ isOpen, onClose, onSuccess }: CreateC
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Password
             </label>
             <input

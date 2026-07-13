@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { usePathname } from "next/navigation";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 type RescheduleContextValue = {
   /** Pending reschedule requests addressed to the current coach. */
@@ -49,7 +50,7 @@ export function RescheduleProvider({
   // fetch() does not. `requests.length` is the same pending count the badge is
   // seeded with server-side.
   const refetch = useCallback(() => {
-    fetch("/api/coach/reschedule-requests")
+    apiFetch(api.rescheduleRequests.list())
       .then((res) => (res.ok ? res.json() : { requests: [] }))
       .then((data) =>
         setPendingCount(

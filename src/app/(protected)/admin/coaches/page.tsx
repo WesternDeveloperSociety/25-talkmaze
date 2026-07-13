@@ -14,6 +14,7 @@ import {
   sessionEvent,
 } from "@/src/components/common/calendar/eventKinds";
 import { fullName } from "@/src/utils/formatName";
+import { api, apiFetch } from "@/src/lib/api/routes";
 import Pagination from "@/src/components/common/Pagination";
 import EmployeeDetailModal from "./_components/EmployeeDetailModal";
 import CreateCoachModal from "./_components/CreateCoachModal";
@@ -69,7 +70,7 @@ export default function CoachesPage() {
   const fetchEmployees = async () => {
     try {
       setEmployeesLoading(true);
-      const res = await fetch("/api/admin/employees");
+      const res = await apiFetch(api.coaches.list());
       if (!res.ok) throw new Error();
       const body = await res.json();
       setEmployees(Array.isArray(body?.employees) ? body.employees : []);
@@ -105,8 +106,8 @@ export default function CoachesPage() {
     async function loadCoachEvents() {
       try {
         const [availRes, sessRes] = await Promise.all([
-          fetch(`/api/admin/employees/${coachId}/availability`),
-          fetch(`/api/admin/employees/${coachId}/sessions`),
+          apiFetch(api.coaches.availability(coachId)),
+          apiFetch(api.coaches.sessions(coachId)),
         ]);
         const availability: AvailabilityRow[] = availRes.ok
           ? ((await availRes.json()).availability ?? [])

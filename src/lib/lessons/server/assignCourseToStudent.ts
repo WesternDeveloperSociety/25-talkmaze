@@ -27,7 +27,7 @@ type AssignResult =
  * insertLessonIntoCourse. Canonical fix is a Postgres RPC; tracked in
  * repo-quality-audit.md.
  *
- * Shared between /api/admin/courses/assign and /api/coach/courses/assign.
+ * Shared between the admin and coach legs of POST /api/courses/[courseId]/students.
  */
 export async function assignCourseToStudent(
   supabase: SupabaseClient<Database>,

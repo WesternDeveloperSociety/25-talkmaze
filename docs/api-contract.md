@@ -50,9 +50,22 @@ export async function POST(req: Request) {
 }
 ```
 
-**Why the order matters.** Validating before auth leaks information ("priceId is required" tells an attacker which field name to send, even unauthenticated). Authorizing before validation produces 403s for callers who would have gotten a useful 400. The audit's "404-not-401" bug in `checkout/route.ts` and `subscriptions/schedule/route.ts` is exactly this mistake — validation runs first, and unauthenticated callers get an error from a later stage that doesn't say "you need to log in."
+**Why the order matters.** Validating before auth leaks information ("priceId is required" tells an attacker which field name to send, even unauthenticated). Authorizing before validation produces 403s for callers who would have gotten a useful 400. The audit's "404-not-401" bug in `checkout/route.ts` and the subscription schedule route (now `students/[studentId]/subscription/schedule/route.ts`) is exactly this mistake — validation runs first, and unauthenticated callers get an error from a later stage that doesn't say "you need to log in."
 
-**One exception**, and only one: routes that take no body (`GET` with no query params, no path params) skip stage 2 entirely. Routes whose path params *are* the input (e.g. `GET /api/parent/students/[studentId]`) still validate the param shape if there's any ambiguity (e.g. coerce-to-UUID).
+**One exception**, and only one: routes that take no body (`GET` with no query params, no path params) skip stage 2 entirely. Routes whose path params *are* the input (e.g. `GET /api/students/[studentId]`) still validate the param shape if there's any ambiguity (e.g. coerce-to-UUID).
+
+---
+
+## URL & naming convention
+
+Routes are grouped **by resource, not by audience**. There are no `admin/`, `coach/`, or `parent/` URL prefixes — the caller's role is enforced inside the handler by `requireRole([...])` + the `assertOwns*` helpers, and the URL never encodes it. (`webhooks/` is the one grouping exception: grouped by source, signature-verified.)
+
+1. **Plural nouns for collections, ids for entities.** `GET /api/students`, `PATCH /api/students/[studentId]`. Sub-resources nest under their owner: `/api/students/[studentId]/availability`, `/api/courses/[courseId]/lessons/[lessonId]`.
+2. **The HTTP method is the verb** for CRUD. `POST` creates, `PATCH` partially updates, `PUT` only for full-replace semantics (availability sets), `DELETE` removes.
+3. **State transitions are custom actions**: `POST <resource>/[id]/<action>` — e.g. `/api/booked-slots/[id]/approve`, `/api/students/[studentId]/subscription/cancel`. Don't force a workflow with side effects into a `PATCH` on a status field, and don't put verbs anywhere else in the path.
+4. **Multi-role reads live at one URL** and dispatch by `account.role` to per-role scoping helpers in `src/lib/<domain>/server/` (see `GET /api/courses` for the reference implementation). Never inline several roles' WHERE clauses in one query, and never widen a route's role gate beyond roles that have an existing scoped query.
+5. **One slug name per dynamic path position** (Next.js hard-errors otherwise): `[studentId]` under `/students`, `[courseId]`/`[lessonId]`/`[studentId]` under `/courses`, `[id]` elsewhere. Zod `ParamsSchema` keys must match the folder slug name — Next keys `params` by folder name.
+6. **Client calls build URLs from the registry** — `src/lib/api/routes.ts` exports typed path builders (`api.students.one(id)`) and a thin `apiFetch` wrapper. Never write an `/api/...` string literal in a component; add a builder instead.
 
 ---
 
@@ -65,13 +78,13 @@ status code is a bug.
 
 | Code | Meaning | Example |
 |---|---|---|
-| `200` | Success, response body included | `GET /api/coach/sessions` returns the sessions list |
+| `200` | Success, response body included | `GET /api/sessions` returns the sessions list |
 | `201` | Success, resource created | `POST /api/attendance` returns the new record |
-| `204` | Success, no body | `DELETE /api/coach/sessions/[id]` |
+| `204` | Success, no body | `DELETE /api/sessions/[id]` |
 | `400` | Caller sent something malformed (Zod validation failed, missing required field, wrong type) | Body without `priceId` |
 | `401` | Caller is not authenticated (no session, expired session) | `Cookie:` header missing |
 | `403` | Caller is authenticated but not permitted (wrong role OR doesn't own the resource) | Coach calls admin route |
-| `404` | The resource referenced in the URL or body does not exist | `GET /api/parent/students/[invalid-uuid]` |
+| `404` | The resource referenced in the URL or body does not exist | `GET /api/students/[invalid-uuid]` |
 | `409` | Conflict with current state — caller's request is well-formed but state forbids it | Student already has an active subscription |
 | `422` | Request is well-formed, caller is authorized, but business logic can't complete | Refund requested but no refundable payment found on the invoice |
 | `429` | Upstream rate-limited us (retryable) | Stripe returned a rate-limit error. Emitted only by `GET /api/subscriptions/invoices` |
@@ -87,7 +100,7 @@ contract tests first.
 
 ### Common pitfalls
 
-- **Never return 200 with `{ status: 404, message: "..." }` in the body.** The HTTP status code *is* the status. Routes like `src/app/api/parent/students/[studentId]/route.ts:17,23` and `src/app/api/coach/lessonspace/[coachId]/[studentId]/route.ts:27-37` do this today; both are bugs.
+- **Never return 200 with `{ status: 404, message: "..." }` in the body.** The HTTP status code *is* the status. Two pre-rewrite routes did this (the old parent-students and coach-lessonspace handlers — today `GET /api/students/[studentId]` and `GET /api/lessonspace/rooms/[studentId]`); both were audit-flagged bugs, both fixed.
 
 - **Never return 404 for "doesn't belong to you."** That's `403`. Single exception: when distinguishing "doesn't exist" from "exists but not yours" would let an attacker enumerate IDs — in which case both cases return `404` *deliberately*, and a code comment explains why. Don't fall into 404 by accident. (See `docs/api-ownership.md` for the enumeration discussion.)
 
@@ -161,7 +174,7 @@ The single exception is webhook payloads from third parties (Stripe, LessonSpace
 
 ### Parameter validation
 
-Path params and query params are *also* validated. The route `GET /api/coach/sessions?student_id=...` should reject `student_id=DROP TABLE` with a `400`, not pass it through to Supabase and hope.
+Path params and query params are *also* validated. The route `GET /api/sessions?student_id=...` should reject `student_id=DROP TABLE` with a `400`, not pass it through to Supabase and hope.
 
 ```ts
 const QuerySchema = z.object({ student_id: z.string().uuid().optional() });
@@ -196,7 +209,7 @@ return Response.json({ sessions, total: sessions.length });
 return Response.json(sessions);
 ```
 
-Two routes currently do this right (`coach/sessions` returns `{ sessions }`, `coach/conversation` returns `{ conversationId }`). Most don't (`admin/students` returns a bare array of `students` rows). Fix when touched.
+Examples that do this right: `GET /api/sessions` returns `{ sessions }`, `POST /api/conversations` returns `{ conversationId }`, `GET /api/students` returns `{ students }`. (Pre-rewrite, most routes didn't — the old admin students list returned a bare array of `students` rows.) Fix any straggler when touched.
 
 ### Pattern C — return success acknowledgement
 
@@ -236,7 +249,7 @@ return Response.json({ success: true }, { status: 200 });
 
 - **Don't write before authorizing.** Every test for "403 when wrong role" should also assert "no row was created." If your route mutates state before the role check, that's a vulnerability — fix the ordering.
 
-- **Compound mutations should be transactional or genuinely idempotent.** `admin/employees/[id]/availability/route.ts` does `DELETE` then `INSERT` without a transaction — if the INSERT fails, the coach has zero availability. Either wrap in a Supabase RPC (server-side function that runs in a single transaction), or restructure to `INSERT new rows, mark old rows inactive` so a partial failure leaves the system consistent.
+- **Compound mutations should be transactional or genuinely idempotent.** `coaches/[id]/availability/route.ts` does `DELETE` then `INSERT` without a transaction — if the INSERT fails, the coach has zero availability. Either wrap in a Supabase RPC (server-side function that runs in a single transaction), or restructure to `INSERT new rows, mark old rows inactive` so a partial failure leaves the system consistent.
 
 ---
 
@@ -262,7 +275,7 @@ export async function POST(req: Request) {
 // ❌ Wrong — 140 lines of inline lookups, conflict checks, FK joins, side effects
 ```
 
-`src/app/api/coach/lesson-progress/route.ts` is the cautionary tale: 142 lines of route handler doing token awards, badge calculations, and aggregate lesson completion checks inline. That logic should be `awardProgress()` in `src/lib/lessons/server/`, with the route being ~15 lines.
+The pre-rewrite coach lesson-progress route was the cautionary tale: 142 lines of route handler doing token awards, badge calculations, and aggregate lesson completion checks inline. That logic now lives in `awardProgress()` in `src/lib/lessons/server/`, with the route (`PATCH /api/lesson-progress`) being the thin auth/validate/authorize/delegate skeleton.
 
 ---
 
@@ -308,7 +321,7 @@ If/when RLS is enabled in prod as a separate project, the handler-level checks r
 - One-off scripts in `scripts/` if any exist.
 
 It is **not** valid in:
-- Admin routes that "want to bypass RLS for convenience" (e.g. the four `pending-bookings` routes today). Use the user-scoped client and let RLS confirm the admin's permission.
+- Admin routes that "want to bypass RLS for convenience" (the four pre-rewrite pending-bookings routes — now `booked-slots/**` — did this; since fixed). Use the user-scoped client and let RLS confirm the admin's permission.
 - Any route in the `(families)` or `(coach)` route groups.
 
 When you see `createServiceRoleClient()` in a non-webhook route, that's a bug. Fix it when you touch the file.

@@ -13,7 +13,7 @@ End-to-end map of checkout, subscriptions, plan changes, and matchmaking trigger
 - `src/app/api/checkout/route.ts` — entry to a new subscription.
 - `src/app/api/webhooks/stripe/route.ts` — main webhook.
 - `src/app/api/webhooks/stripe/learningSpace/route.ts` — internal sub-webhook for LessonSpace provisioning.
-- `src/app/api/subscriptions/{cancel,resume,schedule,schedule/cancel}/route.ts` — lifecycle actions.
+- `src/app/api/students/[studentId]/subscription/{cancel,resume,schedule}/route.ts` — lifecycle actions (`schedule/route.ts` handles both POST create and DELETE cancel).
 
 ## First subscription lifecycle
 
@@ -30,22 +30,22 @@ End-to-end map of checkout, subscriptions, plan changes, and matchmaking trigger
 
 This is implemented via Stripe `SubscriptionSchedule`, not immediate proration.
 
-1. **`POST /api/subscriptions/schedule`** — creates a Stripe `SetupIntent` (off-session) carrying `{target_price_id, stripe_subscription_id}` in metadata. The user confirms a payment method but is not charged.
+1. **`POST /api/students/[studentId]/subscription/schedule`** — creates a Stripe `SetupIntent` (off-session) carrying `{target_price_id, stripe_subscription_id}` in metadata. The user confirms a payment method but is not charged.
 2. **Webhook: `setup_intent.succeeded`** — releases any prior schedule, creates a new two-phase `SubscriptionSchedule`:
    - Phase 1: current plan, ends at `current_period_end`.
    - Phase 2: new plan, starts at `current_period_end`.
    - Stores `pending_plan_id` and `pending_stripe_schedule_id` on `student_subscriptions`.
 3. **Phase transition** — Stripe fires `invoice_payment.paid` (note: distinct from `invoice.paid`). Handler activates the pending plan, clears `pending_*` columns, calls `assignCoachToStudent()` again.
-4. **`POST /api/subscriptions/schedule/cancel`** — releases the `SubscriptionSchedule` and clears the pending columns before it transitions.
+4. **`DELETE /api/students/[studentId]/subscription/schedule`** — releases the `SubscriptionSchedule` and clears the pending columns before it transitions.
 
 There is no proration / mid-cycle discount.
 
 ## Cancel & resume
 
-- **`POST /api/subscriptions/cancel`** — two modes:
+- **`POST /api/students/[studentId]/subscription/cancel`** — two modes:
   - **Immediate** (only if within 28 days of `current_period_start`, per `policies.ts`): refunds the latest charge, sets `status = "cancelled"` and `cancelled_at` immediately.
   - **Graceful** (default): sets Stripe `cancel_at_period_end = true`, leaves `status = "active"`, records `cancelled_at` as the scheduled end.
-- **`POST /api/subscriptions/resume`** — flips `cancel_at_period_end` back to `false` if still inside the period.
+- **`POST /api/students/[studentId]/subscription/resume`** — flips `cancel_at_period_end` back to `false` if still inside the period.
 
 ## Things to be careful with
 

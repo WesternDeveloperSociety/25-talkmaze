@@ -51,8 +51,8 @@ Reference: [src/services/supabase/types/database.ts](../src/services/supabase/ty
 
 ### API/webhook entrypoints (`app/api`)
 
-- [src/app/api/coach/lessonspace/[coachId]/[studentId]/route.ts](../src/app/api/coach/lessonspace/[coachId]/[studentId]/route.ts)
-  - Coach-facing endpoint to create teacher launch link.
+- [src/app/api/lessonspace/rooms/[studentId]/route.ts](../src/app/api/lessonspace/rooms/[studentId]/route.ts)
+  - Coach-facing endpoint to create teacher launch link (coach identity comes from the session, not the URL).
 
 - [src/app/api/webhooks/stripe/learningSpace/route.ts](../src/app/api/webhooks/stripe/learningSpace/route.ts)
   - Internal provisioning endpoint (called from Stripe webhook flow).
@@ -113,8 +113,8 @@ Primary files:
 Trigger: Coach clicks "Lesson Space" on a student row.
 
 ```text
-Coach UI calls /api/coach/lessonspace/{coachAccountId}/{studentId}
--> route resolves coach account_id -> coach id
+Coach UI calls /api/lessonspace/rooms/{studentId}
+-> route resolves the calling coach's account_id (from the session) -> coach id
 -> createAndPersistTeacherParticipantLink()
 -> read student room + coach profile
 -> LessonSpace teacher launch API
@@ -125,8 +125,8 @@ Coach UI calls /api/coach/lessonspace/{coachAccountId}/{studentId}
 
 Primary files:
 
-- [src/app/(protected)/coach/_components/MyStudents.tsx](../src/app/(protected)/coach/_components/MyStudents.tsx)
-- [src/app/api/coach/lessonspace/[coachId]/[studentId]/route.ts](../src/app/api/coach/lessonspace/[coachId]/[studentId]/route.ts)
+- [src/app/(protected)/coach/students/[studentId]/_components/StudentHeaderBanner.tsx](../src/app/(protected)/coach/students/[studentId]/_components/StudentHeaderBanner.tsx)
+- [src/app/api/lessonspace/rooms/[studentId]/route.ts](../src/app/api/lessonspace/rooms/[studentId]/route.ts)
 - [src/lib/lessonspace/server/participants.ts](../src/lib/lessonspace/server/participants.ts)
 - [src/services/lessonspace/rooms.ts](../src/services/lessonspace/rooms.ts)
 

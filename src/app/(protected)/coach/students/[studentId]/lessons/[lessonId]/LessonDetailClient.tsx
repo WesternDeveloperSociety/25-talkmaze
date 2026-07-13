@@ -7,6 +7,7 @@ import RichTextDisplay from "@/src/components/common/rich-text/RichTextDisplay";
 import { Button } from "@/src/components/ui/button";
 import { ExternalLinkIcon } from "@/src/components/ui/icons";
 import { LESSON_STATUS_LABELS as STATUS_LABELS } from "@/src/lib/lessons/lessonStatus";
+import { api, apiFetch } from "@/src/lib/api/routes";
 
 const STATUS_STYLES: Record<number, string> = {
   1: "bg-gray-100 text-gray-600",
@@ -107,14 +108,13 @@ export default function LessonDetailClient({
     setUpdatingStatus(true);
     setError(null);
     try {
-      const res = await fetch("/api/coach/lesson-progress", {
+      const res = await apiFetch(api.lessonProgress.root(), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        json: {
           student_id: studentId,
           lesson_id: lessonId,
           status: newStatus,
-        }),
+        },
       });
       if (!res.ok) throw new Error("Failed to update status");
       setStatus(newStatus);
@@ -131,15 +131,14 @@ export default function LessonDetailClient({
     setFeedbackSaved(false);
     setError(null);
     try {
-      const res = await fetch("/api/coach/lesson-feedback", {
+      const res = await apiFetch(api.lessonProgress.feedback(), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        json: {
           student_id: studentId,
           lesson_id: lessonId,
           positive_feedback: positiveFeedback,
           improvement_feedback: improvementFeedback,
-        }),
+        },
       });
       if (!res.ok) throw new Error("Failed to save feedback");
       setFeedbackSaved(true);
@@ -170,7 +169,7 @@ export default function LessonDetailClient({
       fd.append("description", "");
       fd.append("clear_file", "true");
 
-      const res = await fetch("/api/coach/lesson-tasks", {
+      const res = await apiFetch(api.lessonTasks(), {
         method: "PATCH",
         body: fd,
       });
@@ -221,7 +220,7 @@ export default function LessonDetailClient({
       if (file) fd.append("file", file);
       if (clearFile) fd.append("clear_file", "true");
 
-      const res = await fetch("/api/coach/lesson-tasks", {
+      const res = await apiFetch(api.lessonTasks(), {
         method: "PATCH",
         body: fd,
       });
