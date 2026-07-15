@@ -59,9 +59,9 @@ export default function Home() {
           </div>
         )}
         {/* Main Content Grid */}
-        <div className="grid w-full grid-cols-1 gap-6 xl:min-h-full xl:grid-cols-[1fr_auto]">
+        <div className="grid w-full grid-cols-1 gap-6 xl:grid-cols-[1fr_auto]">
           {/* Left Content - Progress, Banner, Next/Prev Lessons */}
-          <div className="flex min-h-0 min-w-0 w-full flex-col gap-6 xl:min-h-full">
+          <div className="flex min-h-0 min-w-0 w-full flex-col gap-6">
             <LessonProgressBar
               current={progress.completed}
               total={progress.total}
@@ -99,13 +99,15 @@ export default function Home() {
             </div>
           </div>
           {/* Right Content - Reward Tokens, Schedule */}
-          <div className="flex flex-col gap-6 xl:h-full xl:min-h-0">
+          <div className="flex flex-col gap-6 xl:min-h-0">
             <TokenBar
               courseTokens={courseTokens}
               earnedTokenIds={earnedTokenIds}
             />
-            <div className="min-h-0 flex-1">
-              <ScheduleList schedule={sessions} />
+            <div className="min-h-0 flex-1 xl:relative">
+              <div className="xl:absolute xl:inset-0">
+                <ScheduleList schedule={sessions} />
+              </div>
             </div>
           </div>
         </div>
