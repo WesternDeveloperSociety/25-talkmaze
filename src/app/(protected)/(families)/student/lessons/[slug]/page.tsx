@@ -105,7 +105,7 @@ export default function LessonDetailPage() {
 
   return (
     <div className="w-full max-w-[1400px] p-6 md:p-12 flex flex-col gap-8 mx-auto text-white">
-      <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-right-8 duration-300">
+      <div className="flex flex-col gap-6 w-full">
         <LessonProgressCard
           completed={progress.completed}
           total={progress.total}
@@ -117,16 +117,14 @@ export default function LessonDetailPage() {
         />
       </div>
 
-      <div className="animate-in fade-in slide-in-from-bottom-8 duration-500">
+      <div>
         <Card
           variant="accent"
           shadow="none"
           padding="none"
           className="rounded-3xl p-6 md:p-8 gap-6"
         >
-          <div className="font-semibold text-[#1f2e3b] text-lg">
-            Task Cards
-          </div>
+          <div className="font-semibold text-[#1f2e3b] text-lg">Task Cards</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <TaskCard
               title="Pre-Lesson Work"

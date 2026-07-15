@@ -126,7 +126,7 @@ export default function LessonsPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(280px,1fr))] pb-12 animate-in fade-in duration-300">
+      <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(280px,1fr))] pb-12">
         {lessonCards.map(
           ({
             lesson,

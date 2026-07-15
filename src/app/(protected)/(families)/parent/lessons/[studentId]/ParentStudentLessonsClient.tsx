@@ -51,12 +51,10 @@ export default function ParentStudentLessonsClient({
 }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const [selectedLesson, setSelectedLesson] = useState<LessonProp | null>(
-    null,
-  );
+  const [selectedLesson, setSelectedLesson] = useState<LessonProp | null>(null);
 
   return (
-    <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 md:p-12 flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-[1400px] mx-auto p-4 sm:p-6 md:p-12 flex flex-col gap-8">
       {/* Header */}
       <div className="flex flex-wrap items-center gap-4">
         <Link

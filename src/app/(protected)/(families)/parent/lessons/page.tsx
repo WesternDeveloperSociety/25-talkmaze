@@ -152,7 +152,7 @@ export default async function ParentLessons() {
   });
 
   return (
-    <div className="w-full max-w-[1200px] mx-auto p-4 sm:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-[1200px] mx-auto p-4 sm:p-8">
       <h1 className="text-white text-2xl font-bold mb-6">Lessons</h1>
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(320px,1fr))]">
         {studentCards.map((card) => (

@@ -172,7 +172,7 @@ export default function StudentSetupForm({
   };
 
   return (
-    <div className="w-full max-w-[520px] mx-auto p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-[520px] mx-auto p-8">
       <Card variant="light" shadow="md" padding="lg" className="rounded-2xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-[#2B4257]">

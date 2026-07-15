@@ -68,7 +68,7 @@ export default function ParentDashboardClient({
   );
 
   return (
-    <div className="w-full h-full p-4 lg:p-8 overflow-y-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full h-full p-4 lg:p-8 overflow-y-auto">
       {incompleteStudents.length > 0 && (
         <div className="mb-5 flex flex-col gap-2">
           {incompleteStudents.map((s) => (
