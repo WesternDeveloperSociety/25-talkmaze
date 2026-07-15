@@ -86,6 +86,7 @@ export default function Home() {
                 <ReviewLessonCard
                   lessonNumber={prevLesson.lessonNumber}
                   title={prevLesson.title}
+                  token={prevLesson.token}
                   onClick={() => router.push(lessonPath(prevLesson))}
                 />
               )}
@@ -93,6 +94,7 @@ export default function Home() {
                 <NextLessonCard
                   lessonNumber={nextLesson.lessonNumber}
                   title={nextLesson.title}
+                  token={nextLesson.token}
                   onClick={() => router.push(lessonPath(nextLesson))}
                 />
               )}

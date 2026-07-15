@@ -15,12 +15,18 @@ type LessonSummary = {
   slide_show_url: string | null;
 };
 
+export type LessonToken = {
+  title: string;
+  icon_url: string | null;
+};
+
 export type HomeLesson = {
   id: string;
   title: string;
   slug: string | null;
   lessonNumber: number;
   slideShowUrl: string | null;
+  token: LessonToken | null;
 };
 
 export type TokenRow = {
@@ -189,6 +195,7 @@ export function useHomeData() {
 
         // Fetch tokens for this course and the student's earned tokens
         const lessonIds = lessons.map((l) => l.id);
+        const tokenByLessonId = new Map<string, LessonToken>();
         if (lessonIds.length > 0) {
           const [{ data: courseTokensData }, { data: earnedTokensData }] =
             await Promise.all([
@@ -207,6 +214,15 @@ export function useHomeData() {
               (courseTokensData ?? []).find((t: any) => t.lesson_id === l.id),
             )
             .filter(Boolean) as TokenRow[];
+
+          for (const t of orderedTokens) {
+            if (t.lesson_id) {
+              tokenByLessonId.set(t.lesson_id, {
+                title: t.title,
+                icon_url: t.icon_url,
+              });
+            }
+          }
 
           setCourseTokens(orderedTokens);
           setEarnedTokenIds(
@@ -229,6 +245,7 @@ export function useHomeData() {
           slug: l.slug,
           lessonNumber: index + 1,
           slideShowUrl: resolveSlideUrl(l.slide_show_url),
+          token: tokenByLessonId.get(l.id) ?? null,
         });
 
         const currentIndex = lessons.findIndex((l) => !completedIds.has(l.id));

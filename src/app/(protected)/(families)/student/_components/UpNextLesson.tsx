@@ -1,14 +1,19 @@
 "use client";
 
+import { TokenIcon } from "@/src/components/common/TokenIcon";
+import type { LessonToken } from "../_hooks/useHomeData";
+
 interface NextLessonCardProps {
   lessonNumber?: number;
   title?: string;
+  token?: LessonToken | null;
   onClick?: () => void;
 }
 
 export default function NextLessonCard({
   lessonNumber = 9,
   title = "Speech Blocking",
+  token,
   onClick,
 }: NextLessonCardProps) {
   return (
@@ -30,7 +35,11 @@ export default function NextLessonCard({
 
       {/* Token icon box */}
       <div className="absolute right-[18px] top-[15px] w-[63px] h-[63px] bg-white rounded-xl shadow-[inset_0px_4px_4px_rgba(0,0,0,0.25)] flex items-center justify-center text-3xl">
-        🔭
+        <TokenIcon
+          iconUrl={token?.icon_url ?? null}
+          title={token?.title ?? title}
+          className="w-9 h-9 object-contain text-3xl"
+        />
       </div>
 
       {/* Bottom green bar */}
