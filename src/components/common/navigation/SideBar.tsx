@@ -34,7 +34,7 @@ export default function SideBar({
   const fallbackId = navItems[0]?.id ?? 0;
 
   // The nav item whose link matches the current URL, derived during render.
-  // .sort() so the longer URL is matched first before the shorter one — this
+  // .sort() so the longer URL is matched first before the shorter one - this
   // matters for nested routes: /parent/lessons should match over /parent.
   const match = [...navItems]
     .sort((a, b) => b.link.length - a.link.length)
@@ -110,10 +110,10 @@ export default function SideBar({
           </nav>
         </div>
 
-        {/* Pull tab — visible strip is narrow, tap area expanded via `before:` */}
+        {/* Pull tab - Show/Hide Mobile Sidebar*/}
         <button
           onClick={onToggle}
-          className="self-center w-6 h-[96px] bg-[#2B4257] rounded-tr-[15px] rounded-br-[15px] flex items-center justify-center cursor-pointer relative
+          className="self-center -ml-px w-7 h-32 bg-[#2B4257] rounded-tr-[15px] rounded-br-[15px] flex items-center justify-center cursor-pointer relative
             before:content-[''] before:absolute before:top-1/2 before:-translate-y-1/2 before:-left-2 before:w-11 before:h-11"
           aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
         >
@@ -122,7 +122,7 @@ export default function SideBar({
             alt=""
             width={14}
             height={13}
-            className={`transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
+            className={`transition-transform duration-300 ${isOpen ? "" : "rotate-180"}`}
           />
         </button>
       </div>
@@ -131,11 +131,13 @@ export default function SideBar({
       {/*
         pt-[23px] matches the navbar's md:pt-[23px], so:
         23px (pt) + 68px (logo wrapper) + 13px (mb) = 104px = navbar height
-        Nav items therefore always start at the same Y as the dark container top
+        
+        This is so that the SideBar Nav items therefore always start at the 
+        same Y as the dark container (main content area) top
       */}
       <div className="hidden lg:flex flex-col w-auto h-full pt-[23px] lg:px-[clamp(12px,1.5vw,24px)]">
         {/*
-          Fixed-height logo wrapper
+          Fixed-height Talkmaze logo wrapper
           logo scales inside but the 68px area never shrinks
         */}
         <div className="h-[68px] flex items-center justify-center mb-[13px]">
